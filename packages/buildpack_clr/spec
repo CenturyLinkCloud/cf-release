@@ -1,0 +1,5 @@
+---
+name: buildpack_clr
+dependencies:
+files:
+- buildpacks/clr/{bin,config,lib,resources,scripts,support,vendor}/**/*

@@ -32,6 +32,7 @@ packages:
   - buildpack_ruby
   - buildpack_nodejs
   - buildpack_go
+  - buildpack_clr
 
 properties:
   ssl.skip_cert_verify:

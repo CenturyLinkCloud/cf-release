@@ -1,0 +1,5 @@
+set -e -x
+
+cd buildpacks/clr
+gitinfo=`cat gitinfo`
+zip -r ${BOSH_INSTALL_TARGET}/buildpack_clr_${gitinfo}.zip *

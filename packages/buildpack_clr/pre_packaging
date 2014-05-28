@@ -1,0 +1,4 @@
+set -e -x
+
+cd ${BUILD_DIR}/buildpacks/clr
+git --git-dir ${RELEASE_DIR}/src/buildpacks/clr/.git describe --tags > gitinfo

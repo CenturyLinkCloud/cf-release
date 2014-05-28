@@ -94,3 +94,6 @@
 [submodule "src/smoke-tests"]
 	path = src/smoke-tests
 	url = https://github.com/cloudfoundry-incubator/cf-smoke-tests
+[submodule "src/buildpacks/clr"]
+	path = src/buildpacks/clr
+	url = https://github.com/cloudfoundry-incubator/cloudfoundry-buildpack-clr.git
