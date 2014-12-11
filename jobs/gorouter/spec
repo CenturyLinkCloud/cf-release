@@ -23,6 +23,12 @@ properties:
   router.requested_route_registration_interval_in_seconds:
     description: "Interval at which the router requests routes to be registered."
     default: 20
+  router.number_of_cpus:
+    description: "Number of CPUs to utilize, the default (-1) will equal the number of available CPUs"
+    default: -1
+  router.debug_addr:
+    description: "address at which to serve debug info"
+    default: "0.0.0.0:17001"
   nats.user:
     description:
   nats.password:
@@ -41,7 +47,7 @@ properties:
     default: 22
   request_timeout_in_seconds:
     description: "Timeout in seconds for Router -> Endpoint roundtrip."
-    default: 300
+    default: 900
   metron_endpoint.host:
     description: "The host used to emit messages to the Metron agent."
     default: "127.0.0.1"

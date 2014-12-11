@@ -120,7 +120,7 @@ properties:
         secret: doppler-secret
     scim:
       users:
-      - admin|admin|scim.write,scim.read,openid,cloud_controller.admin,clients.read,clients.write,doppler.firehose
+      - admin|admin|scim.write,scim.read,openid,cloud_controller.admin,clients.read,clients.write,doppler.firehose,notification_templates.admin
     no_ssl: true
 
   login:
@@ -293,6 +293,7 @@ jobs:
       - name: cloud_controller_clock
       - name: cloud_controller_worker
       - name: metron_agent
+      - name: nfs_mounter
 
   - name: api_worker_z1
     instances: 0

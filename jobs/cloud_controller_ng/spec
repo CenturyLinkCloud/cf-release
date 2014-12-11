@@ -9,13 +9,13 @@ templates:
   cloud_controller_api.yml.erb: config/cloud_controller_ng.yml
   cloud_controller_api_ctl.erb: bin/cloud_controller_ng_ctl
   cloud_controller_api_worker_ctl.erb: bin/cloud_controller_worker_ctl
-  handle_nfs_or_local_blobstore.sh.erb: bin/handle_nfs_or_local_blobstore.sh
+  handle_local_blobstore.sh.erb: bin/handle_local_blobstore.sh
   stacks.yml.erb: config/stacks.yml
-  nfs-common: config/nfs-common
-  idmapd.conf.erb: config/idmapd.conf
   newrelic.yml.erb: config/newrelic.yml
   nginx_newrelic_plugin_ctl.erb: bin/nginx_newrelic_plugin_ctl
   newrelic_plugin.yml.erb: config/newrelic_plugin.yml
+  ruby_version.sh.erb: bin/ruby_version.sh
+  console.erb: bin/console
 
 packages:
   - common
@@ -25,7 +25,7 @@ packages:
   - libpq
   - mysqlclient
   - sqlite
-  - ruby-2.1.3
+  - ruby-2.1.4
   - buildpack_java
   - buildpack_java_offline
   - buildpack_ruby
@@ -78,20 +78,10 @@ properties:
 
   nfs_server.address:
     description: "NFS server for droplets and apps (not used in an AWS deploy, use s3 instead)"
-  nfs_server.share:
-    description: "NFS server for droplets and apps (not used in an AWS deploy, use s3 instead)"
-  nfs_server.nfsv4:
-    description: "bool to use NFS4 (not used in an AWS deploy, use s3 instead)"
-  nfs_server.idmapd_domain:
-    description: "Domain name for NFS idmapd"
-    default: "localdomain"
-  nfs_server.pipefs_directory:
-    description: "Pipefs directory for NFS idmapd"
-    default: "/var/lib/nfs/rpc_pipefs"
 
   request_timeout_in_seconds:
     description: "Timeout for requests in seconds."
-    default: 300
+    default: 900
 
   cc.external_port:
     description: "External Cloud Controller port"
