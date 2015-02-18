@@ -27,7 +27,8 @@ networks: (( merge ))
 properties:
   <<: (( merge ))
   logger_endpoint:
-    port: 443
+    port: (( merge || 443 ))
+    use_ssl: (( merge || true ))
 
   loggregator:
     blacklisted_syslog_ranges: (( merge || [] ))
