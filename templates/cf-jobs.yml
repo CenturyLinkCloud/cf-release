@@ -127,6 +127,8 @@ meta:
 
 
 jobs:
+  - <<: (( merge ))
+  
   - name: ha_proxy_z1
     templates: (( merge || meta.ha_proxy_templates ))
     instances: 0
