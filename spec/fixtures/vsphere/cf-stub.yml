@@ -14,6 +14,11 @@ networks:
     - cloud_properties:
       static:
       - 0.0.1.0 - 0.0.1.25
+jobs:
+  ha_proxy_z1:
+    properties:
+      ha_proxy:
+        disable_http: true
 properties:
   cc:
     diego:
@@ -56,14 +61,10 @@ properties:
         secret: login_client_secret
       notifications:
         secret: notification_secret
-      servicesmgmt:
-        secret: service_mgmt_secret
-      space-mail:
-        secret: space-mail_secret
-      support-services:
-        secret: support-services_secret
       doppler:
         secret: doppler_secret
+      cloud_controller_username_lookup:
+        secret: cloud_controller_username_lookup_secret
     jwt:
       verification_key: vk
       signing_key: sk

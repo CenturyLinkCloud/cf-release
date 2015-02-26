@@ -1,5 +1,8 @@
 ---
 name: cloud_controller_ng
+
+description: "The Cloud Controller provides primary Cloud Foundry API that is by the CF CLI. The Cloud Controller uses a database to keep tables for organizations, spaces, apps, services, service instances, user roles, and more. Typically multiple instances of Cloud Controller are load balanced."
+
 templates:
   nginx_ctl.erb: bin/nginx_ctl
   nginx.conf.erb: config/nginx.conf
@@ -24,7 +27,6 @@ packages:
   - nginx_newrelic_plugin
   - libpq
   - mysqlclient
-  - sqlite
   - ruby-2.1.4
   - buildpack_java
   - buildpack_java_offline
@@ -182,9 +184,12 @@ properties:
   cc.staging_timeout_in_seconds:
     default: 900
     description: "Timeout for staging a droplet"
+  cc.default_health_check_timeout:
+    default: 60
+    description: "Default health check timeout (in seconds) that can be set for the app"
   cc.maximum_health_check_timeout:
     default: 180
-    description: "Maximum health check timeout that can be set for the app"
+    description: "Maximum health check timeout (in seconds) that can be set for the app"
 
   cc.stacks:
     default:
@@ -424,6 +429,10 @@ properties:
   dea_next.staging_disk_limit_mb:
     description: "Disk limit in mb for staging tasks"
     default: 4096
+  cc.staging_file_descriptor_limit:
+    description: "File descriptor limit for staging tasks"
+    default: 16384
+
   dea_next.advertise_interval_in_seconds:
     description: "Advertise interval for DEAs"
   cc.renderer.max_results_per_page:
@@ -448,6 +457,11 @@ properties:
     description: "Used to grant scope for SSO clients for service brokers"
     default: "openid,cloud_controller_service_permissions.read"
 
+  uaa.clients.cloud_controller_username_lookup.client:
+    description: "Used for fetching usernames from UAA."
+  uaa.clients.cloud_controller_username_lookup.secret:
+    description: "Used for fetching usernames from UAA."
+
   cc.install_buildpacks:
     description: "Set of buildpacks to install during deploy"
   cc.app_bits_upload_grace_period_in_seconds:
@@ -466,3 +480,7 @@ properties:
   cc.allowed_cors_domains:
     description: "List of domains (including scheme) from which Cross-Origin requests will be accepted, a * can be used as a wildcard for any part of a domain"
     default: []
+
+  cc.instance_file_descriptor_limit:
+    description: "The file descriptors made available to each app instance"
+    default: 16384

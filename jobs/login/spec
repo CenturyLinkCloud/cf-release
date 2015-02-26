@@ -1,5 +1,8 @@
 ---
 name: login
+
+description: "Handles authentication in Cloud Foundry and delegates all other identity management tasks to the UAA. Also provides OAuth2 endpoints issuing tokens to client apps for Cloud Foundry (the tokens come from the UAA and no data are stored locally)."
+
 templates:
   login_ctl.erb: bin/login_ctl
   cf-registrar_ctl: bin/login_cf-registrar_ctl
@@ -20,7 +23,6 @@ packages:
   - common
   - ruby
   - login
-  - git
 
 properties:
   login.brand:
@@ -70,8 +72,10 @@ properties:
     description:
   login.uaa_base:
     description: "Location of the UAA."
+  login.self_service_links_enabled:
+    description: "Enable account creation and password reset links in the login server. Enabled by default."
   login.signups_enabled:
-    description: "Enable account creation flow in the login server. Enabled by default."
+      description: "Enable account creation and password reset links in the login server. Enabled by default. (DEPRECATED: Use login.self_service_links_enabled instead)"
   login.invitations_enabled:
     description: "Allows users to send invitations to email addresses outside the system and invite them to create an account. Disabled by default."
   domain:
@@ -198,3 +202,6 @@ properties:
         scope.tokens.write: Cancel the approvals like this one that you have granted to this and other applications
         scope.cloud_controller.read: View details of your applications and services
         scope.cloud_controller.write: Push applications to your account and create and bind services
+  login.restricted_ips_regex:
+    description: "A pipe delimited set of regular expressions of IP addresses that can reach the listening HTTP port of the server."
+    default: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}

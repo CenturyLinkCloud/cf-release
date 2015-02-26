@@ -91,7 +91,7 @@ oauth:
 <% if !properties.uaa.clients || !properties.uaa.clients.admin %>
     admin:
       authorized-grant-types: client_credentials
-      authorities: clients.read,clients.write,clients.secret,uaa.admin,scim.read,password.write
+      authorities: clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write
       id: admin
       secret: "<%= properties.uaa.admin.client_secret %>"
 <% end %>
@@ -108,7 +108,7 @@ oauth:
       id: cf
       override: true
       authorized-grant-types: implicit,password,refresh_token
-      scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,scim.read,scim.write,scim.userids,doppler.firehose
+      scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,scim.read,scim.write,doppler.firehose
       authorities: uaa.none
       access-token-validity: 600
       refresh-token-validity: 2592000
@@ -126,6 +126,8 @@ oauth:
   user:
     authorities: <% properties.uaa.user.authorities.each do |authority| %>
       - <%= authority %><% end %>
+  openid:
+    fallbackToAuthcode: <%= properties.uaa.openid.fallbackToAuthcode %>
 scim:
   userids_enabled: <%= properties.uaa.scim && (!properties.uaa.scim.userids_enabled.nil?) ?  properties.uaa.scim.userids_enabled : false %>
   user.override: <%= properties.uaa.scim && properties.uaa.scim.user && (!properties.uaa.scim.user.override.nil?) ? properties.uaa.scim.user.override : true %>

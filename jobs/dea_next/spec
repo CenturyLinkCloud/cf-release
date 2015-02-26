@@ -1,10 +1,12 @@
 ---
 name: dea_next
+
+description: "The DEA is responsible for running customer applications and maintaining associated routes as live. It also periodically advertises its capacity to the Cloud Controllers and accepts requests to start and stop applications."
+
 templates:
   dea.yml.erb: config/dea.yml
   dea_ctl.erb: bin/dea_ctl
   deterministic_drain.rb: bin/drain
-
 
   warden.yml.erb: config/warden.yml
   warden_ctl.erb: bin/warden_ctl
@@ -18,6 +20,7 @@ packages:
 - rootfs_lucid64
 - ruby
 - buildpack_cache
+
 properties:
   domain:
     description: "DNS domain name for this Cloud Foundry deployment"
@@ -106,10 +109,12 @@ properties:
   dea_next.heartbeat_interval_in_seconds:
     description: "frequency of heartbeats in seconds."
     default: 10
-
   dea_next.zone:
     description: "The Availability Zone"
     default: "default"
+  dea_next.rlimit_core:
+    description: "Maximum size of core file in bytes. 0 represents no core dump files can be created, and -1 represents no size limits."
+    default: 0
   disk_quota_enabled:
     description: "disk quota must be disabled to use warden-inside-warden with the warden cpi"
     default: true

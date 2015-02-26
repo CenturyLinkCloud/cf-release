@@ -1,5 +1,8 @@
 ---
 name: cloud_controller_worker
+
+description: "Cloud Controller worker processes background tasks submitted via the."
+
 templates:
   cloud_controller_worker.yml.erb: config/cloud_controller_ng.yml
   cloud_controller_worker_ctl.erb: bin/cloud_controller_worker_ctl
@@ -16,7 +19,6 @@ packages:
   - nginx_newrelic_plugin
   - libpq
   - mysqlclient
-  - sqlite
   - ruby-2.1.4
 
 properties:
@@ -164,9 +166,12 @@ properties:
   cc.staging_timeout_in_seconds:
     default: 900
     description: "Timeout for staging a droplet"
+  cc.default_health_check_timeout:
+    default: 60
+    description: "Default health check timeout (in seconds) that can be set for the app"
   cc.maximum_health_check_timeout:
     default: 180
-    description: "Maximum health check timeout that can be set for the app"
+    description: "Maximum health check timeout (in seconds) that can be set for the app"
 
   cc.stacks:
     default:
@@ -396,6 +401,10 @@ properties:
   dea_next.staging_disk_limit_mb:
     description: "Disk limit in mb for staging tasks"
     default: 4096
+  cc.staging_file_descriptor_limit:
+    description: "File descriptor limit for staging tasks"
+    default: 16384
+
   cc.renderer.max_results_per_page:
     description: "Maximum number of results returned per page"
     default: 100
@@ -440,3 +449,7 @@ properties:
   cc.thresholds.worker.restart_if_above_mb:
     description: "The cc will restart if memory remains above this threshold for 3 monit cycles"
     default: 512
+
+  cc.instance_file_descriptor_limit:
+    description: "The file descriptors made available to each app instance"
+    default: 16384

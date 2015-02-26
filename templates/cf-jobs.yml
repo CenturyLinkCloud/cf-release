@@ -1,5 +1,8 @@
+empty_hash: {}
+
 networks: (( merge ))
 
+lamb_meta: (( merge ))
 meta:
   environment: ~
 
@@ -114,18 +117,6 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
 
-  loggregator_templates:
-  - name: doppler
-    release: (( meta.release.name ))
-
-  loggregator_trafficcontroller_templates:
-  - name: loggregator_trafficcontroller
-    release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
-
-
-
 jobs:
   - <<: (( merge ))
   
@@ -142,12 +133,15 @@ jobs:
       networks: (( meta.networks.z1 ))
       ha_proxy:
         ssl_pem: ~
+        disable_http: false
+        ssl_ciphers: ~
       router:
         servers:
           z1: (( jobs.router_z1.networks.cf1.static_ips ))
           z2: (( jobs.router_z2.networks.cf2.static_ips ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: nats_z1
     templates: (( merge || meta.nats_templates ))
@@ -160,6 +154,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: nats_z2
     templates: (( merge || meta.nats_templates ))
@@ -172,6 +167,7 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+    update: (( merge || empty_hash ))
 
   - name: etcd_z1
     templates: (( merge || meta.etcd_templates ))
@@ -185,6 +181,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: etcd_z2
     templates: (( merge || meta.etcd_templates ))
@@ -198,6 +195,7 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+    update: (( merge || empty_hash ))
 
   - name: stats_z1
     templates: (( merge || meta.stats_templates ))
@@ -209,6 +207,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: nfs_z1
     templates: (( merge || meta.nfs_templates ))
@@ -221,6 +220,7 @@ jobs:
     properties:
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: postgres_z1
     templates: (( merge || meta.postgres_templates ))
@@ -233,6 +233,7 @@ jobs:
     properties:
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: uaa_z1
     templates: (( merge || meta.uaa_templates ))
@@ -244,6 +245,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: uaa_z2
     templates: (( merge || meta.uaa_templates ))
@@ -255,6 +257,7 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+    update: (( merge || empty_hash ))
 
   - name: login_z1
     templates: (( merge || meta.login_templates ))
@@ -266,6 +269,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: login_z2
     templates: (( merge || meta.login_templates ))
@@ -277,6 +281,7 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+    update: (( merge || empty_hash ))
 
   - name: api_z1
     templates: (( merge || meta.api_templates ))
@@ -292,6 +297,7 @@ jobs:
       metron_agent:
         zone: z1
       nfs_server: (( meta.nfs_server ))
+    update: (( merge || empty_hash ))
 
   - name: api_z2
     templates: (( merge || meta.api_templates ))
@@ -307,6 +313,7 @@ jobs:
       metron_agent:
         zone: z2
       nfs_server: (( meta.nfs_server ))
+    update: (( merge || empty_hash ))
 
   - name: clock_global
     templates: (( merge || meta.clock_templates ))
@@ -319,6 +326,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: api_worker_z1
     templates: (( merge || meta.api_worker_templates ))
@@ -332,6 +340,7 @@ jobs:
       metron_agent:
         zone: z1
       nfs_server: (( meta.nfs_server ))
+    update: (( merge || empty_hash ))
 
   - name: api_worker_z2
     templates: (( merge || meta.api_worker_templates ))
@@ -345,6 +354,7 @@ jobs:
       metron_agent:
         zone: z2
       nfs_server: (( meta.nfs_server ))
+    update: (( merge || empty_hash ))
 
   - name: hm9000_z1
     templates: (( merge || meta.hm9000_templates ))
@@ -356,6 +366,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: hm9000_z2
     templates: (( merge || meta.hm9000_templates ))
@@ -367,12 +378,11 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+    update: (( merge || empty_hash ))
 
   - name: runner_z1
     templates: (( merge || meta.dea_templates ))
     instances: 1
-    update:
-      max_in_flight: 1
     resource_pool: runner_z1
     networks:
       - name: cf1
@@ -383,12 +393,12 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update:
+      max_in_flight: 1
 
   - name: runner_z2
     templates: (( merge || meta.dea_templates ))
     instances: 1
-    update:
-      max_in_flight: 1
     resource_pool: runner_z2
     networks:
       - name: cf2
@@ -399,54 +409,52 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+    update:
+      max_in_flight: 1
 
   - name: loggregator_z1
-    templates: (( merge || meta.loggregator_templates ))
+    templates: (( merge || lamb_meta.loggregator_templates ))
     instances: 2
     resource_pool: medium_z1
     networks:
       - name: cf1
     properties:
+      <<: (( merge ))
       networks: (( meta.networks.z1 ))
-      doppler:
-        zone: z1
+    update: (( merge || empty_hash ))
 
   - name: loggregator_z2
-    templates: (( merge || meta.loggregator_templates ))
+    templates: (( merge || lamb_meta.loggregator_templates ))
     instances: 2
     resource_pool: medium_z2
     networks:
       - name: cf2
     properties:
+      <<: (( merge ))
       networks: (( meta.networks.z2 ))
-      doppler:
-        zone: z2
+    update: (( merge || empty_hash ))
 
   - name: loggregator_trafficcontroller_z1
-    templates: (( merge || meta.loggregator_trafficcontroller_templates ))
+    templates: (( merge || lamb_meta.loggregator_trafficcontroller_templates ))
     instances: 1
     resource_pool: small_z1
     networks:
       - name: cf1
     properties:
+      <<: (( merge ))
       networks: (( meta.networks.z1 ))
-      traffic_controller:
-        zone: z1
-      metron_agent:
-        zone: z1
+    update: (( merge || empty_hash ))
 
   - name: loggregator_trafficcontroller_z2
-    templates: (( merge || meta.loggregator_trafficcontroller_templates ))
+    templates: (( merge || lamb_meta.loggregator_trafficcontroller_templates ))
     instances: 1
     resource_pool: small_z2
     networks:
       - name: cf2
     properties:
+      <<: (( merge ))
       networks: (( meta.networks.z2 ))
-      traffic_controller:
-        zone: z2
-      metron_agent:
-        zone: z2
+    update: (( merge || empty_hash ))
 
   - name: router_z1
     templates: (( merge || meta.router_templates ))
@@ -459,6 +467,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+    update: (( merge || empty_hash ))
 
   - name: router_z2
     templates: (( merge || meta.router_templates ))
@@ -471,6 +480,7 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+    update: (( merge || empty_hash ))
 
   - name: acceptance_tests
     templates:
@@ -550,6 +560,7 @@ properties:
     default_health_check_timeout: 60
     advertise_interval_in_seconds: 5
     heartbeat_interval_in_seconds: 10
+    rlimit_core: (( merge || 0 ))
 
   loggregator_endpoint:
     shared_secret: (( merge ))
@@ -561,16 +572,6 @@ properties:
     shared_secret: (( .properties.loggregator_endpoint.shared_secret ))
 
   logger_endpoint: ~
-
-  loggregator:
-    maxRetainedLogMessages: 100
-    debug: (( merge || false ))
-    blacklisted_syslog_ranges: ~
-
-  doppler:
-    maxRetainedLogMessages: 100
-    debug: (( merge || false ))
-    blacklisted_syslog_ranges: ~
 
   cc: (( merge ))
   ccdb: (( merge ))
@@ -589,6 +590,7 @@ properties:
     status:
       user: (( merge ))
       password: (( merge ))
+    secure_cookies: false
 
   syslog_daemon_config: ~
 

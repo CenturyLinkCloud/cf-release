@@ -13,6 +13,7 @@ RUN \
     bison \
     build-essential \
     curl \
+    debconf-utils \
     gemnasium-toolbelt \
     git \
     libcurl4-openssl-dev \
@@ -29,14 +30,32 @@ RUN \
     python-pip \
     unzip \
     wget \
+    zip \
     zlib1g-dev
+
+RUN  \
+  echo 'mysql-server mysql-server/root_password password password' | debconf-set-selections; \
+  echo 'mysql-server mysql-server/root_password_again password password' | debconf-set-selections; \
+  apt-get -y install \
+    mysql-server \
+    postgresql-contrib-9.3 \
+    postgresql; \
+  chmod 755 /var/lib/mysql; \
+  sed -i 's/peer/trust/' /etc/postgresql/9.3/main/pg_hba.conf; \
+  sed -i 's/md5/trust/' /etc/postgresql/9.3/main/pg_hba.conf; \
+  service mysql restart; \
+  service postgresql restart; \
+  echo 'CREATE DATABASE cc_test;' | mysql -u root -ppassword; \
+  createdb -U postgres cc_test
 
 RUN \
   wget https://github.com/postmodern/ruby-install/archive/v0.4.1.tar.gz -P /tmp; \
   tar zxf /tmp/v0.4.1.tar.gz -C /tmp; \
   cd /tmp/ruby-install-0.4.1 && make install; \
   ruby-install ruby 1.9.3-p547; \
+  ruby-install ruby 2.1.4; \
   rm -rf /usr/local/src/ruby-1.9.3-p547; \
+  rm -rf /usr/local/src/ruby-2.1.4; \
   rm -rf /tmp/*
 
 RUN \
@@ -48,7 +67,7 @@ RUN \
   rm -rf /tmp/*
 
 RUN \
-  bash -l -c "pip install awscli"; \
+  bash -l -c "pip install awscli==1.6.6"; \
   bash -l -c "pip install s3cmd"; \
   bash -l -c "gem install bundler --no-rdoc --no-ri"; \
   bash -l -c "gem install bosh_cli --no-rdoc --no-ri"
@@ -74,7 +93,7 @@ RUN \
   rm -rf /tmp/*
 
 RUN \
-  wget https://s3.amazonaws.com/go-cli/releases/v6.6.1/cf-linux-amd64.tgz -P /tmp; \
+  wget https://s3.amazonaws.com/go-cli/releases/v6.9.0/cf-linux-amd64.tgz -P /tmp; \
   tar xvf /tmp/cf-linux-amd64.tgz -C /usr/local/bin; \
   ln -s /usr/local/bin/cf /usr/local/bin/gcf; \
   rm -rf /tmp/*
