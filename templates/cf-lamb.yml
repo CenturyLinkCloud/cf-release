@@ -25,6 +25,7 @@ jobs:
       zone: z1
     metron_agent:
       zone: z1
+    syslog_daemon_config: ~
 
 - name: loggregator_z2
   properties:
@@ -32,6 +33,7 @@ jobs:
       zone: z2
     metron_agent:
       zone: z2
+    syslog_daemon_config: ~
 
 - name: loggregator_trafficcontroller_z1
   properties:
@@ -39,6 +41,7 @@ jobs:
       zone: z1
     metron_agent:
       zone: z1
+    syslog_daemon_config: ~
 
 - name: loggregator_trafficcontroller_z2
   properties:
@@ -46,6 +49,7 @@ jobs:
       zone: z2
     metron_agent:
       zone: z2
+    syslog_daemon_config: ~
 
 properties:
   <<: (( merge ))
