@@ -152,6 +152,7 @@ jobs:
         static_ips: (( merge ))
     properties:
       networks: (( meta.networks.z1 ))
+      syslog_daemon_config: ~
       metron_agent:
         zone: z1
     update: (( merge || empty_hash ))
@@ -167,6 +168,7 @@ jobs:
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: etcd_z1
@@ -181,6 +183,7 @@ jobs:
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: etcd_z2
