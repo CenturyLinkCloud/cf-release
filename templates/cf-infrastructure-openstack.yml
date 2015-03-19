@@ -140,7 +140,7 @@ jobs:
       # - name: floating
       #   static_ips: (( meta.floating_static_ips ))
       - name: cf1
-        static_ips: (( static_ips(0) ))
+        static_ips: (( static_ips(0, 11) ))
         default: (( merge || nil ))
 
   - name: nats_z1
@@ -165,7 +165,7 @@ jobs:
     instances: 1
     networks:
       - name: cf1
-        static_ips: (( static_ips(5) ))
+        static_ips: (( static_ips(5, 12) ))
 
   - name: loggregator_z1
     instances: 1
@@ -183,6 +183,13 @@ jobs:
       - name: cf1
         static_ips: (( static_ips(8, 9, 10) ))
 
+  - name: ha_proxy_z2
+    instances: 0
+    networks:
+      - name: cf2
+        static_ips: (( static_ips(0, 11) ))
+        default: (( merge || nil ))
+
   - name: nats_z2
     instances: 0
     networks:
@@ -193,7 +200,7 @@ jobs:
     instances: 0
     networks:
       - name: cf2
-        static_ips: (( static_ips(5) ))
+        static_ips: (( static_ips(5, 12) ))
 
   - name: etcd_z2
     instances: 0
