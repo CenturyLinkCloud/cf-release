@@ -80,6 +80,8 @@ meta:
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
+  - name: clc_fs_check
+    release: clc-release
 
   stats_templates:
   - name: collector
@@ -92,6 +94,8 @@ meta:
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
+  - name: clc_fs_check
+    release: clc-release
 
   postgres_templates:
   - name: postgres
@@ -204,6 +208,8 @@ jobs:
       - name: cf1
         static_ips: (( merge ))
     properties:
+      clc_fs_check:
+        paths: ~
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
@@ -219,6 +225,8 @@ jobs:
       - name: cf2
         static_ips: (( merge ))
     properties:
+      clc_fs_check:
+        paths: ~
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
@@ -247,6 +255,8 @@ jobs:
       - name: cf1
         static_ips: ~
     properties:
+      clc_fs_check:
+        paths: ~
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
