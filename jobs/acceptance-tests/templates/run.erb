@@ -2,7 +2,7 @@
 
 set -e -x
 
-export GOROOT=$(readlink -nf /var/vcap/packages/golang1.3)
+export GOROOT=$(readlink -nf /var/vcap/packages/golang1.4)
 export PATH=${GOROOT}/bin:${PATH}
 
 export PATH=/var/vcap/packages/cli/bin:${PATH} # put the cli on the path
@@ -37,15 +37,19 @@ test_command="bin/test_via_ginkgo"
 nodes=<%= properties.acceptance_tests.nodes %>
 
 skipPackages="-skipPackage="
-skipPackages+="v3,"
+skipPackages+=<%= properties.acceptance_tests.include_v3 ? "" : "v3," %>
 skipPackages+=<%= properties.acceptance_tests.include_security_groups ? "" : "security_groups," %>
 skipPackages+=<%= properties.acceptance_tests.include_logging ? "" : "logging," %>
 skipPackages+=<%= properties.acceptance_tests.include_operator ? "" : "operator," %>
 skipPackages+=<%= properties.acceptance_tests.include_internet_dependent ? "" : "internet_dependent," %>
 skipPackages+=<%= properties.acceptance_tests.include_services ? "" : "services," %>
+skipPackages+=<%= properties.acceptance_tests.include_routing_api ? "" : "routing_api," %>
 [[ $skipPackages == *, ]] && skipPackages=${skipPackages%?} # strip trailing comma
 
-skips=<%= properties.acceptance_tests.include_sso ? "" : "-skip=SSO"  %>
+<% skips = [] %>
+<% skips.push("SSO") unless properties.acceptance_tests.include_sso %>
+<% if_p("acceptance_tests.skip_regex") { skips.push properties.acceptance_tests.skip_regex } %>
+skips=<%= skips.empty? ? "" : %Q[-skip="#{skips.join("|")}"] %>
 
 verbose=<%= properties.acceptance_tests.verbose ? "-v" : "" %>
 

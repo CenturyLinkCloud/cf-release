@@ -18,7 +18,7 @@ packages:
   - nginx_newrelic_plugin
   - libpq
   - mysqlclient
-  - ruby-2.1.4
+  - ruby-2.1.6
 
 properties:
   ssl.skip_cert_verify:
@@ -66,6 +66,9 @@ properties:
     description: "Timeout for requests in seconds."
     default: 900
 
+  cc.internal_service_hostname:
+    description: "DNS hostname that can resolve to any CC within the deployment"
+    default: ~
   cc.external_port:
     description: "External Cloud Controller port"
     default: 9022
@@ -110,7 +113,7 @@ properties:
     default: 1200
   cc.billing_event_writing_enabled:
     description: "If true, billing events are written to the CCDB."
-    default: true
+    default: false
   cc.info.name:
     description: "name attribute in the /info endpoint"
   cc.info.build:
@@ -178,8 +181,13 @@ properties:
   cc.stacks:
     default:
       - name: "lucid64"
-        description: "Ubuntu 10.04"
+        description: "Ubuntu 10.04 on x86-64"
+      - name: "cflinuxfs2"
+        description: "Cloud Foundry Linux-based filesystem"
     description: "Tag used by the DEA to describe capabilities (i.e. 'Windows7', 'python-linux'). DEA and CC must agree."
+  cc.default_stack:
+    default: "cflinuxfs2"
+    description: "The default stack to use if no custom stack is specified by an app."
 
   cc.staging_upload_user:
     default: ""
@@ -340,15 +348,18 @@ properties:
   cc.maximum_app_disk_in_mb:
     default: 2048
     description: "The maximum amount of disk a user can request"
-  cc.diego.staging:
-    default: disabled
-    description: "Diego staging support: 'disabled', 'optional', or 'required'"
-  cc.diego.running:
-    default: disabled
-    description: "Diego running support: 'disabled', 'optional', or 'required'"
+  cc.users_can_select_backend:
+    default: true
+    description: "Allow non-admin users to switch their apps between DEA and Diego backends"
   cc.diego_docker:
     default: false
     description: "Enable diego docker support"
+  cc.default_to_diego_backend:
+    default: false
+    description: "Use Diego backend by default for new apps"
+  cc.allow_app_ssh_access:
+    default: true
+    description: "Allow users to change the value of the app-level allow_ssh attribute"
   cc.flapping_crash_count_threshold:
     default: 3
     description: "The threshold of crashes after which the app is marked as flapping"
@@ -398,7 +409,7 @@ properties:
     default: 1024
   dea_next.staging_disk_limit_mb:
     description: "Disk limit in mb for staging tasks"
-    default: 4096
+    default: 6144
   cc.staging_file_descriptor_limit:
     description: "File descriptor limit for staging tasks"
     default: 16384
@@ -451,3 +462,4 @@ properties:
   cc.instance_file_descriptor_limit:
     description: "The file descriptors made available to each app instance"
     default: 16384
+
