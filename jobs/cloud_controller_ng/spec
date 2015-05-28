@@ -19,6 +19,7 @@ templates:
   newrelic_plugin.yml.erb: config/newrelic_plugin.yml
   ruby_version.sh.erb: bin/ruby_version.sh
   console.erb: bin/console
+  dns_health_check.erb: bin/dns_health_check
 
 packages:
   - common
@@ -27,7 +28,7 @@ packages:
   - nginx_newrelic_plugin
   - libpq
   - mysqlclient
-  - ruby-2.1.4
+  - ruby-2.1.6
   - buildpack_java
   - buildpack_java_offline
   - buildpack_ruby
@@ -35,6 +36,8 @@ packages:
   - buildpack_go
   - buildpack_python
   - buildpack_php
+  - buildpack_staticfile
+  - buildpack_binary
 
 properties:
   ssl.skip_cert_verify:
@@ -66,6 +69,13 @@ properties:
   app_domains:
     description: "Array of domains for user apps (example: 'user.app.space.foo', a user app called 'neat' will listen at 'http://neat.user.app.space.foo')"
 
+  app_ssh.host_key_fingerprint:
+    description: "Fingerprint of the application SSH daemon's public (used by clients to authenticate the SSH daemon)"
+    default: ~
+  app_ssh.port:
+    description: "External port for SSH access for applications"
+    default: 2222
+
   networks.apps:
     description: "Cloud controller network information."
 
@@ -85,6 +95,9 @@ properties:
     description: "Timeout for requests in seconds."
     default: 900
 
+  cc.internal_service_hostname:
+    description: "DNS hostname that can resolve to any CC within the deployment"
+    default: ~
   cc.external_port:
     description: "External Cloud Controller port"
     default: 9022
@@ -123,7 +136,7 @@ properties:
     default: 31
   cc.billing_event_writing_enabled:
     description: "If true, billing events are written to the CCDB."
-    default: true
+    default: false
   cc.info.name:
     description: "name attribute in the /info endpoint"
   cc.info.build:
@@ -166,6 +179,11 @@ properties:
   cc.internal_api_password:
     description: "Password used by Diego to access internal endpoints"
 
+  cc.min_cli_version:
+    description: "Minimum version of the CF CLI to work with the API."
+  cc.min_recommended_cli_version:
+    description: "Minimum recommended version of the CF CLI."
+
   cc.uaa_resource_id:
     default: "cloud_controller,cloud_controller_service_permissions"
     description: "Name of service to register to UAA"
@@ -194,8 +212,13 @@ properties:
   cc.stacks:
     default:
       - name: "lucid64"
-        description: "Ubuntu 10.04"
+        description: "Ubuntu 10.04 on x86-64"
+      - name: "cflinuxfs2"
+        description: "Cloud Foundry Linux-based filesystem"
     description: "Tag used by the DEA to describe capabilities (i.e. 'Windows7', 'python-linux'). DEA and CC must agree."
+  cc.default_stack:
+    default: "cflinuxfs2"
+    description: "The default stack to use if no custom stack is specified by an app."
 
   cc.staging_upload_user:
     default: ""
@@ -356,15 +379,18 @@ properties:
   cc.maximum_app_disk_in_mb:
     default: 2048
     description: "The maximum amount of disk a user can request"
-  cc.diego.staging:
-    default: disabled
-    description: "Diego staging support: 'disabled', 'optional', or 'required'"
-  cc.diego.running:
-    default: disabled
-    description: "Diego running support: 'disabled', 'optional', or 'required'"
+  cc.users_can_select_backend:
+    default: true
+    description: "Allow non-admin users to switch their apps between DEA and Diego backends"
   cc.diego_docker:
     default: false
     description: "Enable diego docker support"
+  cc.default_to_diego_backend:
+    default: false
+    description: "Use Diego backend by default for new apps"
+  cc.allow_app_ssh_access:
+    default: true
+    description: "Allow users to change the value of the app-level allow_ssh attribute"
   cc.flapping_crash_count_threshold:
     default: 3
     description: "The threshold of crashes after which the app is marked as flapping"
@@ -379,6 +405,14 @@ properties:
   cc.broker_client_timeout_seconds:
     default: 60
     description: "For requests to service brokers, this is the HTTP (open and read) timeout setting."
+
+  cc.broker_client_default_async_poll_interval_seconds:
+    default: 60
+    description: "Specifies interval on which the CC will poll a service broker for asynchronous actions. If the service broker provides a value, this value is the minimum accepted value the broker can provide."
+
+  cc.broker_client_max_async_poll_duration_minutes:
+    default: 10080
+    description: "The max duration the CC will fetch service instance state from a service broker (in minutes). Default is 1 week"
 
   cc.development_mode:
     default: false
@@ -428,13 +462,14 @@ properties:
     default: 1024
   dea_next.staging_disk_limit_mb:
     description: "Disk limit in mb for staging tasks"
-    default: 4096
+    default: 6144
   cc.staging_file_descriptor_limit:
     description: "File descriptor limit for staging tasks"
     default: 16384
 
   dea_next.advertise_interval_in_seconds:
     description: "Advertise interval for DEAs"
+    default: 5
   cc.renderer.max_results_per_page:
     description: "Maximum number of results returned per page"
     default: 100

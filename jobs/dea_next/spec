@@ -18,8 +18,8 @@ packages:
 - dea_next
 - warden
 - rootfs_lucid64
-- ruby
-- buildpack_cache
+- rootfs_cflinuxfs2
+- ruby-2.1.6
 
 properties:
   domain:
@@ -34,6 +34,9 @@ properties:
     description: "IP of each NATS cluster member."
   dea_next.allow_networks:
     description:
+  dea_next.allow_host_access:
+    description: "Allows warden containers to access the DEA host via its IP"
+    default: false
   dea_next.deny_networks:
     description:
   dea_next.disk_mb:
@@ -57,10 +60,6 @@ properties:
   dea_next.memory_overcommit_factor:
     description:
     default: 1
-  dea_next.stacks:
-    default:
-    - "lucid64"
-    description:
   dea_next.streaming_timeout:
     description:
     default: 60
@@ -72,7 +71,7 @@ properties:
     default: 1024
   dea_next.staging_disk_limit_mb:
     description: "Disk limit in mb for staging tasks"
-    default: 4096
+    default: 6144
   dea_next.staging_cpu_limit_shares:
     description: "CPU limit in shares for staging tasks cgroup"
     default: 512

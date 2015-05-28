@@ -28,7 +28,8 @@ properties:
   dea_next:
     evacuation_bail_out_time_in_seconds: 0
     memory_mb: 8192
-    disk_mb: 16384
+    disk_mb: 32768
+    disk_overcommit_factor: 3
     kernel_network_tuning_enabled: false
 
   loggregator_endpoint:
@@ -37,6 +38,7 @@ properties:
   nats:
     user: nats
     password: nats
+    monitor_port: 4221
     address: (( jobs.nats_z1.networks.cf1.static_ips.[0] ))
 
   hm9000:
@@ -127,9 +129,11 @@ properties:
         secret: doppler-secret
       cloud_controller_username_lookup:
         secret: cloud-controller-username-lookup-secret
+      gorouter:
+        secret: gorouter-secret
     scim:
       users:
-      - admin|admin|scim.write,scim.read,openid,cloud_controller.admin,clients.read,clients.write,doppler.firehose,notification_templates.admin
+      - admin|admin|scim.write,scim.read,openid,cloud_controller.admin,clients.read,clients.write,doppler.firehose
     no_ssl: true
 
   login:
@@ -275,6 +279,18 @@ jobs:
       - name: cf2
         static_ips: (( static_ips(9) ))
 
+  - name: consul_z1
+    instances: 0
+    networks:
+      - name: cf1
+        static_ips: (( static_ips(13, 14, 15) ))
+
+  - name: consul_z2
+    instances: 0
+    networks:
+      - name: cf2
+        static_ips: (( static_ips(13, 14, 15) ))
+
   # only need one router, and set up static IPs
   - name: router_z1
     instances: 1
@@ -286,6 +302,18 @@ jobs:
     networks:
       - name: cf2
         static_ips: (( static_ips(5) ))
+
+  - name: routing_api_z1
+    instances: 0
+    networks:
+      - name: cf1
+        static_ips: (( static_ips(12) ))
+
+  - name: routing_api_z2
+    instances: 0
+    networks:
+      - name: cf2
+        static_ips: (( static_ips(12) ))
 
   - name: login_z2
     instances: 0
@@ -318,13 +346,20 @@ jobs:
 
   # add a persistent disk to the CC, and only need one
   - name: api_z1
-    persistent_disk: 4096
+    persistent_disk: 8192
     templates:
       - name: cloud_controller_ng
+        release: cf
       - name: cloud_controller_clock
+        release: cf
       - name: cloud_controller_worker
+        release: cf
       - name: metron_agent
+        release: cf
       - name: nfs_mounter
+        release: cf
+      - name: consul_agent
+        release: cf
 
   - name: api_worker_z1
     instances: 0
