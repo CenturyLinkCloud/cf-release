@@ -82,6 +82,7 @@ properties:
         password: (( merge ))
 
     databases:
+      - <<: (( merge ))
       - tag: cc
         name: ccdb
         citext: true
