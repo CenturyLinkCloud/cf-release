@@ -149,7 +149,6 @@ meta:
     release: (( meta.release.name ))
 
 jobs:
-  - <<: (( merge ))
   
   - name: consul_z1
     templates: (( merge || meta.consul_templates ))
@@ -686,6 +685,9 @@ jobs:
       - name: cf1
     properties:
       networks: (( meta.networks.z1 ))
+
+  # Don't move this
+  - <<: (( merge ))
 
 properties:
   <<: (( merge ))
