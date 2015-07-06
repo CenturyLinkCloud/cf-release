@@ -64,9 +64,6 @@
 [submodule "src/loggregator"]
 	path = src/loggregator
 	url = https://github.com/cloudfoundry/loggregator
-[submodule "src/acceptance-tests"]
-	path = src/acceptance-tests
-	url = https://github.com/cloudfoundry/cf-acceptance-tests
 [submodule "packages/ruby"]
 	path = packages/ruby
 	url = https://github.com/cloudfoundry/ruby-package
@@ -100,3 +97,9 @@
 [submodule "src/etcd-release"]
 	path = src/etcd-release
 	url = https://github.com/cloudfoundry-incubator/etcd-release.git
+[submodule "src/statsd-injector"]
+	path = src/statsd-injector
+	url = https://github.com/cloudfoundry/statsd-injector.git
+[submodule "src/github.com/cloudfoundry/cf-acceptance-tests"]
+	path = src/github.com/cloudfoundry/cf-acceptance-tests
+	url = https://github.com/cloudfoundry/cf-acceptance-tests

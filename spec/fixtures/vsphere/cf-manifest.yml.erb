@@ -305,6 +305,7 @@ jobs:
       agent:
         services:
         - cloud_controller_ng
+        - routing-api
     metron_agent:
       zone: z1
     networks:
@@ -319,11 +320,15 @@ jobs:
   templates:
   - name: cloud_controller_ng
     release: cf
+  - name: routing-api
+    release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
+  - name: statsd-injector
     release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 1
@@ -336,6 +341,7 @@ jobs:
       agent:
         services:
         - cloud_controller_ng
+        - routing-api
     metron_agent:
       zone: z2
     networks:
@@ -350,11 +356,15 @@ jobs:
   templates:
   - name: cloud_controller_ng
     release: cf
+  - name: routing-api
+    release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
+  - name: statsd-injector
     release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 1
@@ -396,9 +406,9 @@ jobs:
     release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
-    release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 1
@@ -423,9 +433,9 @@ jobs:
     release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
-    release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 1
@@ -504,7 +514,7 @@ jobs:
     release: cf
   update:
     max_in_flight: 1
-- instances: 1
+- instances: 0
   name: loggregator_z1
   networks:
   - name: cf1
@@ -516,8 +526,32 @@ jobs:
   templates:
 <%= loggregator_templates %>
   update: {}
-- instances: 1
+- instances: 0
   name: loggregator_z2
+  networks:
+  - name: cf2
+  properties:
+<%= loggregator_z2_properties %>
+    networks:
+      apps: cf2
+  resource_pool: medium_z2
+  templates:
+<%= loggregator_templates %>
+  update: {}
+- instances: 1
+  name: doppler_z1
+  networks:
+  - name: cf1
+  properties:
+<%= loggregator_z1_properties %>
+    networks:
+      apps: cf1
+  resource_pool: medium_z1
+  templates:
+<%= loggregator_templates %>
+  update: {}
+- instances: 1
+  name: doppler_z2
   networks:
   - name: cf2
   properties:
@@ -600,52 +634,6 @@ jobs:
   - name: consul_agent
     release: cf
   update: {}
-- instances: 0
-  name: routing_api_z1
-  networks:
-  - name: cf1
-    static_ips: []
-  properties:
-    consul:
-      agent:
-        services:
-        - routing-api
-    metron_agent:
-      zone: z1
-    networks:
-      apps: cf1
-  resource_pool: medium_z1
-  templates:
-  - name: routing-api
-    release: cf
-  - name: metron_agent
-    release: cf
-  - name: consul_agent
-    release: cf
-  update: {}
-- instances: 0
-  name: routing_api_z2
-  networks:
-  - name: cf2
-    static_ips: []
-  properties:
-    consul:
-      agent:
-        services:
-        - routing-api
-    metron_agent:
-      zone: z2
-    networks:
-      apps: cf2
-  resource_pool: medium_z2
-  templates:
-  - name: routing-api
-    release: cf
-  - name: metron_agent
-    release: cf
-  - name: consul_agent
-    release: cf
-  update: {}
 - instances: 1
   lifecycle: errand
   name: acceptance_tests
@@ -673,7 +661,7 @@ meta:
   - name: cf
     version: latest
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   default_env:
     bosh:
@@ -721,6 +709,8 @@ properties:
     default_app_disk_in_mb: 1024
     default_app_memory: 1024
     default_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
@@ -733,8 +723,6 @@ properties:
       package: buildpack_python
     - name: php_buildpack
       package: buildpack_php
-    - name: staticfile_buildpack
-      package: buildpack_staticfile
     - name: binary_buildpack
       package: buildpack_binary
     default_health_check_timeout: 60
@@ -758,6 +746,8 @@ properties:
     external_host: api
     external_protocol: http
     install_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
@@ -770,8 +760,6 @@ properties:
       package: buildpack_python
     - name: php_buildpack
       package: buildpack_php
-    - name: staticfile_buildpack
-      package: buildpack_staticfile
     - name: binary_buildpack
       package: buildpack_binary
     jobs:
@@ -849,6 +837,8 @@ properties:
     staging_upload_password: password
     staging_upload_user: username
     system_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
@@ -861,8 +851,6 @@ properties:
       package: buildpack_python
     - name: php_buildpack
       package: buildpack_php
-    - name: staticfile_buildpack
-      package: buildpack_staticfile
     - name: binary_buildpack
       package: buildpack_binary
     thresholds:
@@ -893,6 +881,7 @@ properties:
   collector: null
   consul:
     agent:
+      log_level: null
       servers:
         lan: []
   databases:
@@ -1016,6 +1005,7 @@ properties:
   request_timeout_in_seconds: 900
   router:
     enable_ssl: true
+    enable_routing_api: false
     ssl_cert: |
       -----BEGIN CERTIFICATE-----
       MIIDBjCCAe4CCQCz3nn1SWrDdTANBgkqhkiG9w0BAQUFADBFMQswCQYDVQQGEwJB
@@ -1162,7 +1152,7 @@ resource_pools:
   name: small_z1
   network: cf1
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1174,7 +1164,7 @@ resource_pools:
   name: small_z2
   network: cf2
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1186,7 +1176,7 @@ resource_pools:
   name: medium_z1
   network: cf1
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1198,7 +1188,7 @@ resource_pools:
   name: medium_z2
   network: cf2
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1210,7 +1200,7 @@ resource_pools:
   name: large_z1
   network: cf1
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1222,7 +1212,7 @@ resource_pools:
   name: large_z2
   network: cf2
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1234,7 +1224,7 @@ resource_pools:
   name: runner_z1
   network: cf1
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1246,7 +1236,7 @@ resource_pools:
   name: runner_z2
   network: cf2
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1258,7 +1248,7 @@ resource_pools:
   name: router_z1
   network: cf1
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1270,7 +1260,7 @@ resource_pools:
   name: router_z2
   network: cf2
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1282,7 +1272,7 @@ resource_pools:
   name: small_errand
   network: cf1
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:
@@ -1294,7 +1284,7 @@ resource_pools:
   name: xlarge_errand
   network: cf1
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
   env:
     bosh:

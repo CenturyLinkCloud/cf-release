@@ -12,6 +12,7 @@ templates:
   cloud_controller_api.yml.erb: config/cloud_controller_ng.yml
   cloud_controller_api_ctl.erb: bin/cloud_controller_ng_ctl
   cloud_controller_api_worker_ctl.erb: bin/cloud_controller_worker_ctl
+  cloud_controller_api_migration_ctl.erb: bin/cloud_controller_migration_ctl
   handle_local_blobstore.sh.erb: bin/handle_local_blobstore.sh
   stacks.yml.erb: config/stacks.yml
   newrelic.yml.erb: config/newrelic.yml
@@ -54,7 +55,7 @@ properties:
     default: "2"
     description:
   support_address:
-    default: "http://support.cloudfoundry.com"
+    default:
     description:
   description:
     default: "Cloud Foundry sponsored by Pivotal"
@@ -211,8 +212,6 @@ properties:
 
   cc.stacks:
     default:
-      - name: "lucid64"
-        description: "Ubuntu 10.04 on x86-64"
       - name: "cflinuxfs2"
         description: "Cloud Foundry Linux-based filesystem"
     description: "Tag used by the DEA to describe capabilities (i.e. 'Windows7', 'python-linux'). DEA and CC must agree."
@@ -364,6 +363,16 @@ properties:
     default: true
   logger_endpoint.port:
     description: "Port for logger endpoint listed at /v2/info"
+    default: 443
+
+  doppler.enabled:
+    description: "Whether to expose the doppler_logging_endpoint listed at /v2/info"
+    default: true
+  doppler.use_ssl:
+    description: "Whether to use ssl for the doppler_logging_endpoint listed at /v2/info"
+    default: true
+  doppler.port:
+    description: "Port for doppler_logging_endpoint listed at /v2/info"
     default: 443
 
   cc.db_encryption_key:

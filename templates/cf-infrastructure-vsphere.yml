@@ -1,7 +1,7 @@
 meta:
 
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
     version: latest
 
 compilation:
@@ -143,11 +143,21 @@ jobs:
         static_ips: (( static_ips(16) ))
 
   - name: loggregator_z1
-    instances: 1
+    instances: 0
     networks:
       - name: cf1
 
   - name: loggregator_z2
+    instances: 0
+    networks:
+      - name: cf2
+
+  - name: doppler_z1
+    instances: 1
+    networks:
+      - name: cf1
+
+  - name: doppler_z2
     instances: 1
     networks:
       - name: cf2
@@ -197,9 +207,6 @@ jobs:
     - name: login
     - name: metron_agent
       release: cf
-
-  - name: acceptance_tests
-    instances: 1
 
   - name: smoke_tests
     instances: 1

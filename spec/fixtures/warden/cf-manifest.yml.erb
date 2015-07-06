@@ -345,6 +345,7 @@ jobs:
       agent:
         services:
         - cloud_controller_ng
+        - routing-api
     metron_agent:
       zone: z1
     networks:
@@ -363,11 +364,15 @@ jobs:
     release: cf
   - name: cloud_controller_worker
     release: cf
+  - name: routing-api
+    release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
+  - name: statsd-injector
     release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 0
@@ -380,6 +385,7 @@ jobs:
       agent:
         services:
         - cloud_controller_ng
+        - routing-api
     metron_agent:
       zone: z2
     networks:
@@ -394,11 +400,15 @@ jobs:
   templates:
   - name: cloud_controller_ng
     release: cf
+  - name: routing-api
+    release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
+  - name: statsd-injector
     release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 0
@@ -440,9 +450,9 @@ jobs:
     release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
-    release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 0
@@ -467,9 +477,9 @@ jobs:
     release: cf
   - name: metron_agent
     release: cf
-  - name: nfs_mounter
-    release: cf
   - name: consul_agent
+    release: cf
+  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 1
@@ -549,7 +559,7 @@ jobs:
     release: cf
   update:
     max_in_flight: 1
-- instances: 1
+- instances: 0
   name: loggregator_z1
   networks:
   - name: cf1
@@ -563,6 +573,30 @@ jobs:
   update: {}
 - instances: 0
   name: loggregator_z2
+  networks:
+  - name: cf2
+  properties:
+<%= loggregator_z2_properties %>
+    networks:
+      apps: cf2
+  resource_pool: medium_z2
+  templates:
+<%= loggregator_templates %>
+  update: {}
+- instances: 1
+  name: doppler_z1
+  networks:
+  - name: cf1
+  properties:
+<%= loggregator_z1_properties %>
+    networks:
+      apps: cf1
+  resource_pool: medium_z1
+  templates:
+<%= loggregator_templates %>
+  update: {}
+- instances: 0
+  name: doppler_z2
   networks:
   - name: cf2
   properties:
@@ -638,52 +672,6 @@ jobs:
   resource_pool: router_z2
   templates:
   - name: gorouter
-    release: cf
-  - name: metron_agent
-    release: cf
-  - name: consul_agent
-    release: cf
-  update: {}
-- instances: 0
-  name: routing_api_z1
-  networks:
-  - name: cf1
-    static_ips: []
-  properties:
-    consul:
-      agent:
-        services:
-        - routing-api
-    metron_agent:
-      zone: z1
-    networks:
-      apps: cf1
-  resource_pool: medium_z1
-  templates:
-  - name: routing-api
-    release: cf
-  - name: metron_agent
-    release: cf
-  - name: consul_agent
-    release: cf
-  update: {}
-- instances: 0
-  name: routing_api_z2
-  networks:
-  - name: cf2
-    static_ips: []
-  properties:
-    consul:
-      agent:
-        services:
-        - routing-api
-    metron_agent:
-      zone: z2
-    networks:
-      apps: cf2
-  resource_pool: medium_z2
-  templates:
-  - name: routing-api
     release: cf
   - name: metron_agent
     release: cf
@@ -2404,6 +2392,9 @@ properties:
     apps_domain: 10.244.0.34.xip.io
     nodes: 1
     skip_ssl_validation: true
+    system_domain: 10.244.0.34.xip.io
+    oauth_password: gorouter-secret
+    include_routing_api: true
   app_ssh: null
   app_domains:
   - 10.244.0.34.xip.io
@@ -2435,6 +2426,8 @@ properties:
     default_app_disk_in_mb: 1024
     default_app_memory: 256
     default_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
@@ -2447,8 +2440,6 @@ properties:
       package: buildpack_python
     - name: php_buildpack
       package: buildpack_php
-    - name: staticfile_buildpack
-      package: buildpack_staticfile
     - name: binary_buildpack
       package: buildpack_binary
     default_health_check_timeout: 60
@@ -2475,6 +2466,8 @@ properties:
     external_host: api
     external_protocol: https
     install_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
@@ -2487,8 +2480,6 @@ properties:
       package: buildpack_python
     - name: php_buildpack
       package: buildpack_php
-    - name: staticfile_buildpack
-      package: buildpack_staticfile
     - name: binary_buildpack
       package: buildpack_binary
     jobs:
@@ -2576,6 +2567,8 @@ properties:
     staging_upload_password: upload-password
     staging_upload_user: upload-user
     system_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
@@ -2588,8 +2581,6 @@ properties:
       package: buildpack_python
     - name: php_buildpack
       package: buildpack_php
-    - name: staticfile_buildpack
-      package: buildpack_staticfile
     - name: binary_buildpack
       package: buildpack_binary
     thresholds:
@@ -2620,6 +2611,7 @@ properties:
   collector: null
   consul:
     agent:
+      log_level: null
       servers:
         lan: []
   databases:
@@ -2761,6 +2753,7 @@ properties:
   request_timeout_in_seconds: 900
   router:
     enable_ssl: true
+    enable_routing_api: true
     ssl_cert: |
       -----BEGIN CERTIFICATE-----
       MIIDBjCCAe4CCQCz3nn1SWrDdTANBgkqhkiG9w0BAQUFADBFMQswCQYDVQQGEwJB
