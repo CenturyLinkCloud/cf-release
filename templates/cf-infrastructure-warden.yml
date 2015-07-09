@@ -219,6 +219,9 @@ properties:
     admin_password: admin
     skip_ssl_validation: true
     nodes: 1
+    system_domain: (( domain ))
+    oauth_password: gorouter-secret
+    include_routing_api: true
 
   smoke_tests:
     api:  (( "api." domain ))
@@ -255,11 +258,21 @@ jobs:
       - name: cf2
 
   - name: loggregator_z1
-    instances: 1
+    instances: 0
     networks:
       - name: cf1
 
   - name: loggregator_z2
+    instances: 0
+    networks:
+      - name: cf2
+
+  - name: doppler_z1
+    instances: 1
+    networks:
+      - name: cf1
+
+  - name: doppler_z2
     instances: 0
     networks:
       - name: cf2
@@ -354,11 +367,15 @@ jobs:
         release: cf
       - name: cloud_controller_worker
         release: cf
+      - name: routing-api
+        release: cf
       - name: metron_agent
         release: cf
-      - name: nfs_mounter
+      - name: statsd-injector
         release: cf
       - name: consul_agent
+        release: cf
+      - name: nfs_mounter
         release: cf
 
   - name: api_worker_z1
@@ -446,9 +463,6 @@ jobs:
           9dMsPsSHkFxEra7G2clGnhpe+pK9V+WTrD9Qnoc+tK808hX1YQ6mBlnR6w99jlaR
           HVTi2pRhEhbWUkBv2kooXvD6ANb15PbPSF1FK7YyW1KHqcbm+lF22g==
           -----END RSA PRIVATE KEY-----
-
-  - name: acceptance_tests
-    instances: 1
 
   - name: smoke_tests
     instances: 1

@@ -6,6 +6,7 @@ export GOROOT=$(readlink -nf /var/vcap/packages/golang1.4)
 export PATH=${GOROOT}/bin:${PATH}
 
 export PATH=/var/vcap/packages/cli/bin:${PATH} # put the cli on the path
+export PATH=/var/vcap/packages/rtr/bin:${PATH} # put the routing-api cli on the path
 
 export GOPATH=/var/vcap/packages/acceptance-tests
 export PATH=${GOPATH}/bin:${PATH}
@@ -36,7 +37,7 @@ test_command="bin/test_via_ginkgo"
 
 nodes=<%= properties.acceptance_tests.nodes %>
 
-skipPackages="-skipPackage="
+skipPackages="-skipPackage=helpers,"
 skipPackages+=<%= properties.acceptance_tests.include_v3 ? "" : "v3," %>
 skipPackages+=<%= properties.acceptance_tests.include_security_groups ? "" : "security_groups," %>
 skipPackages+=<%= properties.acceptance_tests.include_logging ? "" : "logging," %>

@@ -144,6 +144,8 @@ properties:
     user_buildpacks: (( merge || [] ))
     system_buildpacks: (( merge || default_buildpacks ))
     default_buildpacks:
+      - name: staticfile_buildpack
+        package: buildpack_staticfile
       - name: java_buildpack
         package: buildpack_java
       - name: ruby_buildpack
@@ -156,16 +158,12 @@ properties:
         package: buildpack_python
       - name: php_buildpack
         package: buildpack_php
-      - name: staticfile_buildpack
-        package: buildpack_staticfile
       - name: binary_buildpack
         package: buildpack_binary
 
     install_buildpacks: (( system_buildpacks user_buildpacks ))
 
-    stacks:
-    - name: "cflinuxfs2"
-      description: "Cloud Foundry Linux-based filesystem"
+    stacks: ~
 
     security_group_definitions: (( merge || meta.default_security_group_definitions ))
     default_running_security_groups: (( merge || ["public_networks", "dns"] ))

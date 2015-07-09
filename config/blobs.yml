@@ -35,10 +35,6 @@ nginx/newrelic_nginx_agent.tar.gz:
   object_id: cad4fada-4a11-4b1a-a884-c6f58dacead9
   sha: 98a1b10475371705932fea4769f8ac1b0451106f
   size: 5222
-golang/go1.2.1.linux-amd64.tar.gz:
-  object_id: a5a3eaf9-54ac-47b6-bcf7-5ad59eafe787
-  sha: 7605f577ff6ac2d608a3a4e829b255ae2ebc8dcf
-  size: 56123695
 uaa/openjdk-1.7.0_51.tar.gz:
   object_id: 67b767f3-4032-4970-8535-05dbf7c696a5
   sha: 0f4d3705e3a4e1452250def57cfc36ab6cc37355
@@ -52,9 +48,9 @@ uaa/openjdk-1.7.0-u40-unofficial-macosx-x86_64-bundle.tgz:
   sha: ac7febc5bbff2dedf8add624a727a4c0ac6c3d10
   size: 65991397
 cli/cf-linux-amd64.tgz:
-  object_id: e87220cd-7ed8-4d62-add6-8df75cbd843c
-  sha: 6345a6d2a3fe016f874326816c63ed738afce196
-  size: 4908363
+  object_id: c1f7d817-ada4-4636-85db-646c497132bd
+  sha: a5296502c3258d6e1701adfcce5f33b091f6d018
+  size: 4939902
 golang/go1.3.1.linux-amd64.tar.gz:
   object_id: b4778c9a-1994-4dda-b7a2-97ae93e1b835
   sha: 3af011cc19b21c7180f2604fd85fbc4ddde97143
@@ -80,13 +76,9 @@ haproxy/pcre-8.36.tar.gz:
   sha: fb537757756818133d8157ec878bc11f5a93ef4d
   size: 2009464
 rootfs/cflinuxfs2.tar.gz:
-  object_id: da62ad98-fb54-4cc7-b778-0a7a807d5d19
-  sha: c8d1e8163844333a37f4848194d3e26e044af12b
-  size: 222237173
-rootfs/lucid64.tar.gz:
-  object_id: 86966b8d-f84f-450f-b7ec-b1a63a3aa0ae
-  sha: 7f14f973b7b2ddbf238f0a8032296cefe122c100
-  size: 146132081
+  object_id: 53169ec4-47a6-4683-8e05-485d2e29ea51
+  sha: 45914689d88484f7ad4efc6a75b9877f48837da4
+  size: 249225633
 golang/go1.4.2.linux-amd64.tar.gz:
   object_id: bfaf73b1-de68-4c94-9a02-555245b2eb8d
   sha: 5020af94b52b65cc9b6f11d50a67e4bae07b0aff
@@ -119,30 +111,10 @@ ruby-2.1.6/yaml-0.1.6.tar.gz:
   object_id: 9b62536a-3cae-416d-a243-78e97b41e346
   sha: f3d404e11bec3c4efcddfd14c42d46f1aabe0b5d
   size: 503012
-staticfile-buildpack/staticfile_buildpack-cached-v1.0.0.zip:
-  object_id: 631eb980-d1aa-44a5-86cc-e13b13f8c8b9
-  sha: 34371ecb9973c03191ea35c7d52d6461186fe279
-  size: 6449775
-rtr/routing_api_cli.tgz:
-  object_id: 5fb2b119-d894-4fcd-ab3d-69f9d51d2fab
-  sha: bd18cdc02bf98ef37546d85b3496cbcd2c549497
-  size: 2180884
-nodejs-buildpack/nodejs_buildpack-cached-v1.3.1.zip:
-  object_id: ea681326-1a90-4099-a1e1-7f00740ddedb
-  sha: 2f1b0e58cc6d0b0d2bf28059c8b42f9cca4ed5a5
-  size: 72725931
-python-buildpack/python_buildpack-cached-v1.3.1.zip:
-  object_id: 5fcc88cf-cacb-4d04-8d6b-a39fb250b2f4
-  sha: 41ff98d6a742f248ddf56f5fae934b827d696264
-  size: 475785540
-php-buildpack/php_buildpack-cached-v3.2.1.zip:
-  object_id: b1d550aa-b25a-469d-a997-215fa399f04a
-  sha: bca21b65d5f983c23402fd35154b5b4fa8121965
-  size: 842059983
-ruby-buildpack/ruby_buildpack-cached-v1.4.1.zip:
-  object_id: 19ed8d99-37ff-4a35-8a38-dcb4dfc7b062
-  sha: d632db981a1d535f86f60897883bb744d7b85713
-  size: 383003608
+php-buildpack/php_buildpack-cached-v3.2.2.zip:
+  object_id: 4cbd86d2-a739-4a13-90f1-58f6097e718a
+  sha: 3a6e7a88754029e6efbaa0d6905fca6086bb0b64
+  size: 846464023
 go-buildpack/go_buildpack-cached-v1.3.1.zip:
   object_id: 5e671c4a-4b81-41fe-a4a7-9bb6cabe933a
   sha: 82d19816c39e0e77b25ce599117fa07b2e06efe8
@@ -175,3 +147,27 @@ openjdk/openjdk-1.7.0-u40-unofficial-linux-amd64.tgz:
   object_id: 1c5d266f-9c90-4160-9fc5-b3b30f2c248a
   sha: bb41c68e0dc26ad71635d4bff8da16246ded10f0
   size: 42574624
+ruby-buildpack/ruby_buildpack-cached-v1.4.2.zip:
+  object_id: 9affa18e-acc3-424e-b264-73483792d0cb
+  sha: 08d3ceedc59229eb78fefa09f9e8ed39f0ae79cc
+  size: 382942164
+postgres/postgresql-9.4.2.tar.gz:
+  object_id: 4d807bf7-94bc-449f-a0c3-549642df3085
+  sha: 7a70474f9b44fea1b345e48bd5e4418bccf41f3f
+  size: 23092865
+staticfile-buildpack/staticfile_buildpack-cached-v1.1.0.zip:
+  object_id: a449f533-f9a9-4680-bb65-bb5fb1c607bd
+  sha: fe8e6bed345a88c387424dc47c213cc13345fcf4
+  size: 4684378
+nodejs-buildpack/nodejs_buildpack-cached-v1.3.4.zip:
+  object_id: c6a02aaf-b917-4102-b243-1ffff9796dbc
+  sha: 7ad1ca449292596ba58b4a2f37ef9a5c404b558e
+  size: 73107547
+python-buildpack/python_buildpack-cached-v1.3.5.zip:
+  object_id: 4546ee42-3240-487e-a05a-0936e2fd9f00
+  sha: 6245126aff2ef88fd05edbb12a94610f16e67f87
+  size: 449080634
+rtr/rtr-linux-amd64.tgz:
+  object_id: 9ff89e27-0326-498e-bd04-6010e941f039
+  sha: cf58eb5f92211d57f282c264dea2b1ad2d5213dd
+  size: 2189778

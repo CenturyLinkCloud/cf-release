@@ -29,11 +29,15 @@ meta:
   api_templates:
   - name: cloud_controller_ng
     release: (( meta.release.name ))
+  - name: routing-api
+    release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
-  - name: nfs_mounter
-    release: (( meta.release.name ))
+  - name: statsd-injector
+    release: (( lamb_meta.release.name ))
   - name: consul_agent
+    release: (( meta.release.name ))
+  - name: nfs_mounter
     release: (( meta.release.name ))
 
   api_worker_templates:
@@ -41,9 +45,9 @@ meta:
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
-  - name: nfs_mounter
-    release: (( meta.release.name ))
   - name: consul_agent
+    release: (( meta.release.name ))
+  - name: nfs_mounter
     release: (( meta.release.name ))
 
   clock_templates:
@@ -70,14 +74,6 @@ meta:
 
   router_templates:
   - name: gorouter
-    release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
-  - name: consul_agent
-    release: (( meta.release.name ))
-
-  routing_api_templates:
-  - name: routing-api
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
@@ -415,6 +411,7 @@ jobs:
         agent:
           services:
             - cloud_controller_ng
+            - routing-api
       networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
@@ -437,6 +434,7 @@ jobs:
         agent:
           services:
             - cloud_controller_ng
+            - routing-api
       networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
@@ -550,7 +548,7 @@ jobs:
 
   - name: loggregator_z1
     templates: (( merge || lamb_meta.loggregator_templates ))
-    instances: 1
+    instances: 0
     resource_pool: medium_z1
     networks:
       - name: cf1
@@ -560,6 +558,28 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: loggregator_z2
+    templates: (( merge || lamb_meta.loggregator_templates ))
+    instances: 0
+    resource_pool: medium_z2
+    networks:
+      - name: cf2
+    properties:
+      <<: (( merge ))
+      networks: (( meta.networks.z2 ))
+    update: (( merge || empty_hash ))
+
+  - name: doppler_z1
+    templates: (( merge || lamb_meta.loggregator_templates ))
+    instances: 1
+    resource_pool: medium_z1
+    networks:
+      - name: cf1
+    properties:
+      <<: (( merge ))
+      networks: (( meta.networks.z1 ))
+    update: (( merge || empty_hash ))
+
+  - name: doppler_z2
     templates: (( merge || lamb_meta.loggregator_templates ))
     instances: 1
     resource_pool: medium_z2
@@ -628,47 +648,11 @@ jobs:
       syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
-  - name: routing_api_z1
-    instances: 0
-    networks:
-    - name: cf1
-      static_ips: (( merge ))
-    resource_pool: medium_z1
-    templates: (( merge || meta.routing_api_templates ))
-    properties:
-      consul:
-        agent:
-          services:
-            - routing-api
-      metron_agent:
-        zone: z1
-      syslog_daemon_config: ~
-      networks: (( meta.networks.z1 ))
-    update: (( merge || empty_hash ))
-
-  - name: routing_api_z2
-    instances: 0
-    networks:
-    - name: cf2
-      static_ips: (( merge ))
-    resource_pool: medium_z2
-    templates: (( merge || meta.routing_api_templates ))
-    properties:
-      consul:
-        agent:
-          services:
-            - routing-api
-      metron_agent:
-        zone: z2
-      syslog_daemon_config: ~
-      networks: (( meta.networks.z2 ))
-    update: (( merge || empty_hash ))
-
   - name: acceptance_tests
     templates:
     - name: acceptance-tests
       release: (( meta.release.name ))
-    instances: 0
+    instances: 1
     resource_pool: small_errand
     lifecycle: errand
     networks:
@@ -693,6 +677,7 @@ properties:
   <<: (( merge ))
   consul:
     agent:
+      log_level: (( merge || nil ))
       servers:
         lan: (( consul_servers ))
 
@@ -778,6 +763,7 @@ properties:
 
   router:
     enable_ssl: (( merge || nil ))
+    enable_routing_api: (( merge || nil ))
     ssl_cert: (( merge || nil ))
     ssl_key: (( merge || nil ))
     cipher_suites: (( merge || nil ))
