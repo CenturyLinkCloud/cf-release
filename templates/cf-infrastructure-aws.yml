@@ -39,9 +39,6 @@ properties:
   uaa:
     catalina_opts: -Xmx768m -XX:MaxPermSize=256m
 
-  login:
-    catalina_opts: -Xmx768m -XX:MaxPermSize=256m
-
   dea_next:
     deny_networks:
       - 169.254.0.0/16 # AWS Status
@@ -191,18 +188,6 @@ jobs:
       - name: cf2
         static_ips: (( static_ips(5, 6, 15, 16, 17, 18, 19, 20) ))
 
-  - name: routing_api_z1
-    instances: 0
-    networks:
-      - name: cf1
-        static_ips: (( static_ips(26) ))
-
-  - name: routing_api_z2
-    instances: 0
-    networks:
-      - name: cf2
-        static_ips: (( static_ips(26) ))
-
   - name: loggregator_z1
     instances: 0
     networks:
@@ -234,13 +219,13 @@ jobs:
       - name: cf2
 
   - name: consul_z1
-    instances: 0
+    instances: 2
     networks:
       - name: cf1
         static_ips: (( static_ips(27, 28, 29) ))
 
   - name: consul_z2
-    instances: 0
+    instances: 1
     networks:
       - name: cf2
         static_ips: (( static_ips(27, 28, 29) ))

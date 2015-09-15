@@ -24,13 +24,20 @@
 
   config = {
     "datacenter" => p("consul.agent.datacenter"),
+    "domain" => "cf.internal",
     "data_dir" => "/var/vcap/store/consul_agent",
     "log_level" => p("consul.agent.log_level"),
-    "node_name" => "#{name}-#{spec.index}",
+    "node_name" => "#{name.gsub('_', '-')}-#{spec.index}",
     "server" => server,
     "ports" => {
       "dns" => 53,
     },
+
+    # without this, a single bootstrapped server will be orphaned after
+    # restarting
+    "rejoin_after_leave" => true,
+
+    "retry_join" => lan_servers,
 
     # explicitly listen and advertise this job's IP; otherwise consul will pick
     # an external IP, and possibly pick the wrong one (e.g. if containers are
@@ -39,24 +46,35 @@
 
     # without this, a single bootstrapped server will be orphaned after
     # restarting
-    "rejoin_after_leave" => true,
     "disable_remote_exec" => true,
     "disable_update_check" => true,
     "protocol" => p("consul.agent.protocol_version"),
-  }
+}
 
+if p("consul.require_ssl")
+  certs_dir = "/var/vcap/jobs/consul_agent/config/certs"
   if server
-    if lan_servers.empty?
-      config["bootstrap"] = true
-    else
-      config["bootstrap_expect"] = lan_servers.size
-    end
+    key_file = "#{certs_dir}/server.key"
+    cert_file = "#{certs_dir}/server.crt"
+  else
+    key_file = "#{certs_dir}/agent.key"
+    cert_file = "#{certs_dir}/agent.crt"
   end
 
-  if lan_servers
-    config["start_join"] = lan_servers
-    config["retry_join"] = lan_servers
-  end
+  config.merge!({
+    "verify_outgoing" => true,
+    "verify_incoming" => true,
+    "verify_server_hostname" => true,
+    "ca_file" => "#{certs_dir}/ca.crt",
+    "key_file" => key_file,
+    "cert_file" => cert_file,
+    "encrypt" => p("consul.encrypt_keys").first,
+  })
+end
+
+if server
+  config["bootstrap_expect"] = lan_servers.size
+end
 
   config.to_json
 %>

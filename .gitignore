@@ -10,7 +10,6 @@
 .final_builds/packages/**/*.tgz
 .gitreview
 .idea
-/Gemfile.lock
 blobs
 config/dev.yml
 config/private.yml
@@ -23,3 +22,4 @@ releases/**/*.tgz
 .DS_Store
 bosh-lite/manifests/*
 bosh-lite/tmp/*
+pkg

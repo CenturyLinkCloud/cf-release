@@ -12,13 +12,6 @@ meta:
   release:
     name: cf
 
-  networks:
-    z1:
-      apps: cf1
-
-    z2:
-      apps: cf2
-
   nfs_server:
     address: (( jobs.nfs_z1.networks.cf1.static_ips.[0] || nil ))
     allow_from_entries:
@@ -126,12 +119,6 @@ meta:
   - name: consul_agent
     release: (( meta.release.name ))
 
-  login_templates:
-  - name: login
-    release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
-
   hm9000_templates:
   - name: hm9000
     release: (( meta.release.name ))
@@ -148,9 +135,9 @@ jobs:
   
   - name: consul_z1
     templates: (( merge || meta.consul_templates ))
-    instances: 0
+    instances: 2
     persistent_disk: 1024
-    resource_pool: medium_z1
+    resource_pool: small_z1
     networks:
       - name: cf1
         static_ips: (( merge ))
@@ -166,9 +153,9 @@ jobs:
 
   - name: consul_z2
     templates: (( merge || meta.consul_templates ))
-    instances: 0
+    instances: 1
     persistent_disk: 1024
-    resource_pool: medium_z2
+    resource_pool: small_z2
     networks:
       - name: cf2
         static_ips: (( merge ))
@@ -192,7 +179,6 @@ jobs:
     networks: (( merge || default_networks ))
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z1 ))
       ha_proxy:
         ssl_pem: ~
         disable_http: false
@@ -236,7 +222,6 @@ jobs:
       - name: cf1
         static_ips: (( merge ))
     properties:
-      networks: (( meta.networks.z1 ))
       syslog_daemon_config: ~
       metron_agent:
         zone: z1
@@ -251,7 +236,6 @@ jobs:
       - name: cf2
         static_ips: (( merge ))
     properties:
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -268,11 +252,11 @@ jobs:
     properties:
       clc_fs_check:
         paths: ~
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
-    update: (( merge || empty_hash ))
+    update:
+      max_in_flight: 1
 
   - name: etcd_z2
     templates: (( merge || meta.etcd_templates ))
@@ -285,11 +269,11 @@ jobs:
     properties:
       clc_fs_check:
         paths: ~
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
-    update: (( merge || empty_hash ))
+    update:
+      max_in_flight: 1
 
   - name: stats_z1
     templates: (( merge || meta.stats_templates ))
@@ -298,7 +282,6 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -315,7 +298,6 @@ jobs:
     properties:
       clc_fs_check:
         paths: ~
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -330,7 +312,6 @@ jobs:
     - name: cf1
       static_ips: ~
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -346,8 +327,7 @@ jobs:
       consul:
         agent:
           services:
-            - uaa
-      networks: (( meta.networks.z1 ))
+            uaa: {}
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -363,34 +343,7 @@ jobs:
       consul:
         agent:
           services:
-            - uaa
-      networks: (( meta.networks.z2 ))
-      metron_agent:
-        zone: z2
-      syslog_daemon_config: ~
-    update: (( merge || empty_hash ))
-
-  - name: login_z1
-    templates: (( merge || meta.login_templates ))
-    instances: 0
-    resource_pool: medium_z1
-    networks:
-      - name: cf1
-    properties:
-      networks: (( meta.networks.z1 ))
-      metron_agent:
-        zone: z1
-      syslog_daemon_config: ~
-    update: (( merge || empty_hash ))
-
-  - name: login_z2
-    templates: (( merge || meta.login_templates ))
-    instances: 0
-    resource_pool: medium_z2
-    networks:
-      - name: cf2
-    properties:
-      networks: (( meta.networks.z2 ))
+            uaa: {}
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -410,9 +363,8 @@ jobs:
       consul:
         agent:
           services:
-            - cloud_controller_ng
-            - routing-api
-      networks: (( meta.networks.z1 ))
+            cloud_controller_ng: {}
+            routing-api: {}
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -433,9 +385,8 @@ jobs:
       consul:
         agent:
           services:
-            - cloud_controller_ng
-            - routing-api
-      networks: (( meta.networks.z2 ))
+            cloud_controller_ng: {}
+            routing-api: {}
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -450,7 +401,6 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -464,7 +414,6 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -479,7 +428,6 @@ jobs:
     networks:
       - name: cf2
     properties:
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -493,7 +441,6 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -506,7 +453,6 @@ jobs:
     networks:
       - name: cf2
     properties:
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -522,7 +468,6 @@ jobs:
     properties:
       dea_next:
         zone: (( merge || "z1" ))
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -539,7 +484,6 @@ jobs:
     properties:
       dea_next:
         zone: (( merge || "z2" ))
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -554,7 +498,6 @@ jobs:
       - name: cf1
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z1 ))
     update: (( merge || empty_hash ))
 
   - name: loggregator_z2
@@ -565,7 +508,6 @@ jobs:
       - name: cf2
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z2 ))
     update: (( merge || empty_hash ))
 
   - name: doppler_z1
@@ -576,7 +518,6 @@ jobs:
       - name: cf1
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z1 ))
     update: (( merge || empty_hash ))
 
   - name: doppler_z2
@@ -587,7 +528,6 @@ jobs:
       - name: cf2
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z2 ))
     update: (( merge || empty_hash ))
 
   - name: loggregator_trafficcontroller_z1
@@ -598,7 +538,6 @@ jobs:
       - name: cf1
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z1 ))
     update: (( merge || empty_hash ))
 
   - name: loggregator_trafficcontroller_z2
@@ -609,7 +548,6 @@ jobs:
       - name: cf2
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z2 ))
     update: (( merge || empty_hash ))
 
   - name: router_z1
@@ -623,8 +561,7 @@ jobs:
       consul:
         agent:
           services:
-            - gorouter
-      networks: (( meta.networks.z1 ))
+            gorouter: {}
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -641,8 +578,7 @@ jobs:
       consul:
         agent:
           services:
-            - gorouter
-      networks: (( meta.networks.z2 ))
+            gorouter: {}
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -668,7 +604,7 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
+      <<: (( merge ))
 
   # Don't move this
   - <<: (( merge ))
@@ -680,6 +616,13 @@ properties:
       log_level: (( merge || nil ))
       servers:
         lan: (( consul_servers ))
+    ca_cert:
+    agent_cert:
+    agent_key:
+    encrypt_keys: (( merge || [] ))
+    require_ssl:
+    server_cert:
+    server_key:
 
   dropsonde:
     enabled: true
@@ -709,7 +652,15 @@ properties:
     prof_port: 0
 
   etcd:
+    ca_cert:
+    client_cert:
+    client_key:
+    cluster:
     machines: (( jobs.etcd_z1.networks.cf1.static_ips jobs.etcd_z2.networks.cf2.static_ips ))
+    peer_require_ssl:
+    require_ssl:
+    server_cert:
+    server_key:
 
   etcd_metrics_server:
     nats:
@@ -759,19 +710,21 @@ properties:
 
   databases: ~
 
-  login: (( merge ))
-
   router:
     enable_ssl: (( merge || nil ))
-    enable_routing_api: (( merge || nil ))
     ssl_cert: (( merge || nil ))
     ssl_key: (( merge || nil ))
     cipher_suites: (( merge || nil ))
-    requested_route_registration_interval_in_seconds: 20
+    requested_route_registration_interval_in_seconds: (( merge || nil ))
+    ssl_skip_validation: (( merge || nil ))
     status:
       user: (( merge ))
       password: (( merge ))
-    secure_cookies: false
+    secure_cookies: (( merge || nil ))
+    route_service_secret: (( merge || nil ))
+    route_service_timeout: (( merge || nil ))
+    logrotate: (( merge || nil ))
+    extra_headers_to_log: (( merge || nil ))
 
   syslog_daemon_config: ~
 

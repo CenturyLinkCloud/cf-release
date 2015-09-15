@@ -38,8 +38,11 @@ properties:
     user: nats_user
     password: nats_password
   router:
+    logrotate:
+      freq_min: 20
+      rotate: 5
+      size: 3M
     enable_ssl: true
-    enable_routing_api: false
     ssl_cert: |
       -----BEGIN CERTIFICATE-----
       MIIDBjCCAe4CCQCz3nn1SWrDdTANBgkqhkiG9w0BAQUFADBFMQswCQYDVQQGEwJB

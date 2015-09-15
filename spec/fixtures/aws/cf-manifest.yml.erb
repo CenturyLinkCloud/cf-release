@@ -7,11 +7,11 @@ compilation:
   workers: 6
 director_uuid: DIRECTOR_UUID
 jobs:
-- instances: 0
+- instances: 2
   name: consul_z1
   networks:
   - name: cf1
-    static_ips: []
+    static_ips: [0.0.0.27, 0.0.0.28]
   persistent_disk: 1024
   properties:
     consul:
@@ -19,7 +19,7 @@ jobs:
         mode: server
     metron_agent:
       zone: z1
-  resource_pool: medium_z1
+  resource_pool: small_z1
   templates:
   - name: consul_agent
     release: cf
@@ -28,11 +28,11 @@ jobs:
   update:
     max_in_flight: 1
     serial: true
-- instances: 0
+- instances: 1
   name: consul_z2
   networks:
   - name: cf2
-    static_ips: []
+    static_ips: [0.0.1.27]
   persistent_disk: 1024
   properties:
     consul:
@@ -40,7 +40,7 @@ jobs:
         mode: server
     metron_agent:
       zone: z2
-  resource_pool: medium_z2
+  resource_pool: small_z2
   templates:
   - name: consul_agent
     release: cf
@@ -64,8 +64,6 @@ jobs:
       ssl_ciphers: null
       ssl_pem: null
       disable_http: false
-    networks:
-      apps: cf1
     router:
       servers:
         z1:
@@ -90,8 +88,6 @@ jobs:
   properties:
     metron_agent:
       zone: z1
-    networks:
-      apps: cf1
   resource_pool: medium_z1
   templates:
   - name: nats
@@ -108,8 +104,6 @@ jobs:
     static_ips:
     - 0.0.1.1
   properties:
-    networks:
-      apps: cf2
     metron_agent:
       zone: z2
   resource_pool: medium_z2
@@ -130,8 +124,6 @@ jobs:
     - 0.0.0.25
   persistent_disk: 10024
   properties:
-    networks:
-      apps: cf1
     metron_agent:
       zone: z1
   resource_pool: medium_z1
@@ -142,7 +134,8 @@ jobs:
     release: cf
   - name: metron_agent
     release: cf
-  update: {}
+  update:
+    max_in_flight: 1
 - instances: 1
   name: etcd_z2
   networks:
@@ -151,8 +144,6 @@ jobs:
     - 0.0.1.9
   persistent_disk: 10024
   properties:
-    networks:
-      apps: cf2
     metron_agent:
       zone: z2
   resource_pool: medium_z2
@@ -163,14 +154,13 @@ jobs:
     release: cf
   - name: metron_agent
     release: cf
-  update: {}
+  update:
+    max_in_flight: 1
 - instances: 1
   name: stats_z1
   networks:
   - name: cf1
   properties:
-    networks:
-      apps: cf1
     metron_agent:
       zone: z1
   resource_pool: small_z1
@@ -186,8 +176,6 @@ jobs:
   - name: cf1
     static_ips: null
   properties:
-    networks:
-      apps: cf1
     metron_agent:
       zone: z1
   persistent_disk: 102400
@@ -204,8 +192,6 @@ jobs:
   - name: cf1
     static_ips: null
   properties:
-    networks:
-      apps: cf1
     metron_agent:
       zone: z1
   persistent_disk: 4096
@@ -224,9 +210,7 @@ jobs:
     consul:
       agent:
         services:
-        - uaa
-    networks:
-      apps: cf1
+          uaa: {}
     metron_agent:
       zone: z1
   resource_pool: medium_z1
@@ -246,9 +230,7 @@ jobs:
     consul:
       agent:
         services:
-        - uaa
-    networks:
-      apps: cf2
+          uaa: {}
     metron_agent:
       zone: z2
   resource_pool: medium_z2
@@ -260,38 +242,6 @@ jobs:
   - name: consul_agent
     release: cf
   update: {}
-- instances: 0
-  name: login_z1
-  networks:
-  - name: cf1
-  properties:
-    networks:
-      apps: cf1
-    metron_agent:
-      zone: z1
-  resource_pool: medium_z1
-  templates:
-  - name: login
-    release: cf
-  - name: metron_agent
-    release: cf
-  update: {}
-- instances: 0
-  name: login_z2
-  networks:
-  - name: cf2
-  properties:
-    networks:
-      apps: cf2
-    metron_agent:
-      zone: z2
-  resource_pool: medium_z2
-  templates:
-  - name: login
-    release: cf
-  - name: metron_agent
-    release: cf
-  update: {}
 - instances: 1
   name: api_z1
   networks:
@@ -301,12 +251,10 @@ jobs:
     consul:
       agent:
         services:
-        - cloud_controller_ng
-        - routing-api
+          cloud_controller_ng: {}
+          routing-api: {}
     metron_agent:
       zone: z1
-    networks:
-      apps: cf1
     nfs_server:
       address: null
       allow_from_entries:
@@ -337,12 +285,10 @@ jobs:
     consul:
       agent:
         services:
-        - cloud_controller_ng
-        - routing-api
+          cloud_controller_ng: {}
+          routing-api: {}
     metron_agent:
       zone: z2
-    networks:
-      apps: cf2
     nfs_server:
       address: null
       allow_from_entries:
@@ -372,8 +318,6 @@ jobs:
   properties:
     metron_agent:
       zone: z1
-    networks:
-      apps: cf1
   resource_pool: medium_z1
   templates:
   - name: cloud_controller_clock
@@ -389,8 +333,6 @@ jobs:
   properties:
     metron_agent:
       zone: z1
-    networks:
-      apps: cf1
     nfs_server:
       address: null
       allow_from_entries:
@@ -416,8 +358,6 @@ jobs:
   properties:
     metron_agent:
       zone: z2
-    networks:
-      apps: cf2
     nfs_server:
       address: null
       allow_from_entries:
@@ -440,8 +380,6 @@ jobs:
   networks:
   - name: cf1
   properties:
-    networks:
-      apps: cf1
     metron_agent:
       zone: z1
   resource_pool: medium_z1
@@ -456,8 +394,6 @@ jobs:
   networks:
   - name: cf2
   properties:
-    networks:
-      apps: cf2
     metron_agent:
       zone: z2
   resource_pool: medium_z2
@@ -477,8 +413,6 @@ jobs:
       zone: z1
     metron_agent:
       zone: z1
-    networks:
-      apps: cf1
   resource_pool: runner_z1
   templates:
   - name: dea_next
@@ -499,8 +433,6 @@ jobs:
       zone: z2
     metron_agent:
       zone: z2
-    networks:
-      apps: cf2
   resource_pool: runner_z2
   templates:
   - name: dea_next
@@ -517,8 +449,6 @@ jobs:
   - name: cf1
   properties:
 <%= loggregator_z1_properties %>
-    networks:
-      apps: cf1
   resource_pool: medium_z1
   templates:
 <%= loggregator_templates %>
@@ -529,8 +459,6 @@ jobs:
   - name: cf2
   properties:
 <%= loggregator_z2_properties %>
-    networks:
-      apps: cf2
   resource_pool: medium_z2
   templates:
 <%= loggregator_templates %>
@@ -541,8 +469,6 @@ jobs:
   - name: cf1
   properties:
 <%= loggregator_z1_properties %>
-    networks:
-      apps: cf1
   resource_pool: medium_z1
   templates:
 <%= loggregator_templates %>
@@ -553,8 +479,6 @@ jobs:
   - name: cf2
   properties:
 <%= loggregator_z2_properties %>
-    networks:
-      apps: cf2
   resource_pool: medium_z2
   templates:
 <%= loggregator_templates %>
@@ -565,8 +489,6 @@ jobs:
   - name: cf1
   properties:
 <%= loggregator_trafficcontroller_z1_properties %>
-    networks:
-      apps: cf1
   resource_pool: small_z1
   templates:
 <%= loggregator_trafficcontroller_templates %>
@@ -577,8 +499,6 @@ jobs:
   - name: cf2
   properties:
 <%= loggregator_trafficcontroller_z2_properties %>
-    networks:
-      apps: cf2
   resource_pool: small_z2
   templates:
 <%= loggregator_trafficcontroller_templates %>
@@ -593,11 +513,9 @@ jobs:
     consul:
       agent:
         services:
-        - gorouter
+          gorouter: {}
     metron_agent:
       zone: z1
-    networks:
-      apps: cf1
   resource_pool: router_z1
   templates:
   - name: gorouter
@@ -617,11 +535,9 @@ jobs:
     consul:
       agent:
         services:
-        - gorouter
+          gorouter: {}
     metron_agent:
       zone: z2
-    networks:
-      apps: cf2
   resource_pool: router_z2
   templates:
   - name: gorouter
@@ -645,9 +561,7 @@ jobs:
   name: smoke_tests
   networks:
   - name: cf1
-  properties:
-    networks:
-      apps: cf1
+  properties: {}
   resource_pool: small_errand
   templates:
   - name: smoke-tests
@@ -657,12 +571,6 @@ meta:
   releases:
   - name: cf
     version: latest
-  stemcell:
-    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-    version: latest
-  default_env:
-    bosh:
-      password: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0
 name: null
 networks:
 - name: cf1
@@ -688,7 +596,6 @@ properties:
       cutoff_age_in_days: 31
     audit_events:
       cutoff_age_in_days: 31
-    billing_event_writing_enabled: false
     broker_client_timeout_seconds: 70
     broker_client_default_async_poll_interval_seconds: 60
     broker_client_max_async_poll_duration_minutes: 10080
@@ -705,7 +612,7 @@ properties:
     internal_api_password: password
     logging_level: debug2
     db_logging_level: debug2
-    client_max_body_size: 1536M
+    client_max_body_size: 15M
     db_encryption_key: the_key
     default_app_disk_in_mb: 1024
     default_app_memory: 1024
@@ -736,7 +643,6 @@ properties:
     - dns
     default_to_diego_backend: false
     development_mode: false
-    diego_docker: false
     allow_app_ssh_access: true
     directories: null
     disable_custom_buildpacks: false
@@ -893,7 +799,14 @@ properties:
     agent:
       log_level: null
       servers:
-        lan: []
+        lan: [0.0.0.27, 0.0.0.28, 0.0.1.27]
+    ca_cert:
+    agent_cert:
+    agent_key:
+    encrypt_keys: []
+    require_ssl:
+    server_cert:
+    server_key:
   databases: null
   dea_next:
     advertise_interval_in_seconds: 5
@@ -927,6 +840,14 @@ properties:
   dropsonde:
     enabled: true
   etcd:
+    ca_cert: null
+    client_cert: null
+    client_key: null
+    cluster: null
+    peer_require_ssl: null
+    require_ssl: null
+    server_cert: null
+    server_key: null
     machines:
     - 0.0.0.10
     - 0.0.0.25
@@ -949,7 +870,7 @@ properties:
       domain: null
     asset_base_url: null
     brand: oss
-    catalina_opts: -Xmx768m -XX:MaxPermSize=256m
+    catalina_opts: ~
     invitations_enabled: null
     links:
       home: https://console.example.com
@@ -998,8 +919,12 @@ properties:
     share: null
   request_timeout_in_seconds: 900
   router:
+    logrotate:
+      freq_min: 20
+      rotate: 5
+      size: 3M
     enable_ssl: true
-    enable_routing_api: false
+    extra_headers_to_log: null
     ssl_cert: |
       -----BEGIN CERTIFICATE-----
       MIIDBjCCAe4CCQCz3nn1SWrDdTANBgkqhkiG9w0BAQUFADBFMQswCQYDVQQGEwJB
@@ -1049,11 +974,14 @@ properties:
       SOWIahDrATA4g1T6yLBWQPhj3ZXD3eCMxT1Q3DvpG1DjgvXwmXQJAA==
       -----END RSA PRIVATE KEY-----
     cipher_suites: TLS_RSA_WITH_RC4_128_SHA:TLS_RSA_WITH_AES_128_CBC_SHA
-    requested_route_registration_interval_in_seconds: 20
+    ssl_skip_validation: null
+    requested_route_registration_interval_in_seconds: null
     status:
       password: router_password
       user: router_user
-    secure_cookies: false
+    secure_cookies: null
+    route_service_timeout: null
+    route_service_secret: null
   smoke_tests: null
   ssl:
     skip_cert_verify: false
@@ -1115,6 +1043,7 @@ properties:
     login: null
     newrelic: null
     no_ssl: false
+    require_https: ~
     restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
     scim:
       external_groups: null

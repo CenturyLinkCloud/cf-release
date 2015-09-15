@@ -67,6 +67,24 @@ authentication:
     lockoutPeriodSeconds: <%= properties.uaa.authentication.policy.lockoutPeriodSeconds ? properties.uaa.authentication.policy.lockoutPeriodSeconds : 300%>
 <% end %>
 
+password:
+  policy:
+    minLength: <%= properties.uaa.password.policy.minLength %>
+    maxLength: <%= properties.uaa.password.policy.maxLength %>
+    requireUpperCaseCharacter: <%= properties.uaa.password.policy.requireUpperCaseCharacter %>
+    requireLowerCaseCharacter: <%= properties.uaa.password.policy.requireLowerCaseCharacter %>
+    requireDigit: <%= properties.uaa.password.policy.requireDigit %>
+    requireSpecialCharacter: <%= properties.uaa.password.policy.requireSpecialCharacter %>
+    expirePasswordInMonths: <%= properties.uaa.password.policy.expirePasswordInMonths %>
+    global:
+      minLength: <%= properties.uaa.password.policy.minLength %>
+      maxLength: <%= properties.uaa.password.policy.maxLength %>
+      requireUpperCaseCharacter: <%= properties.uaa.password.policy.requireUpperCaseCharacter %>
+      requireLowerCaseCharacter: <%= properties.uaa.password.policy.requireLowerCaseCharacter %>
+      requireDigit: <%= properties.uaa.password.policy.requireDigit %>
+      requireSpecialCharacter: <%= properties.uaa.password.policy.requireSpecialCharacter %>
+      expirePasswordInMonths: <%= properties.uaa.password.policy.expirePasswordInMonths %>
+
 <% scheme = p("uaa.no_ssl") ? "http" : "https" %>
 issuer.uri: <%= p("uaa.issuer", p("uaa.url", "#{scheme}://uaa.#{properties.domain}")) %>
 
@@ -133,11 +151,16 @@ oauth:
   openid:
     fallbackToAuthcode: <%= properties.uaa.openid.fallbackToAuthcode %>
 scim:
-  userids_enabled: <%= properties.uaa.scim && (!properties.uaa.scim.userids_enabled.nil?) ?  properties.uaa.scim.userids_enabled : false %>
-  user.override: <%= properties.uaa.scim && properties.uaa.scim.user && (!properties.uaa.scim.user.override.nil?) ? properties.uaa.scim.user.override : true %>
+  userids_enabled: <%= properties.uaa.scim.userids_enabled %>
+  user.override: <%= properties.uaa.scim.user.override %>
 <% if properties.uaa.scim && properties.uaa.scim.users then %>
   users: <% properties.uaa.scim.users.each do |user| %>
     - <%= user %><% end %>
+<% end %>
+
+<% if properties.uaa.scim && properties.uaa.scim.external_groups then %>
+  external_groups: <% properties.uaa.scim.external_groups.each do |group| %>
+    - <%= group %><% end %>
 <% end %>
 
 <% if properties.uaa && properties.uaa.zones && properties.uaa.zones.internal &&  properties.uaa.zones.internal.hostnames then %>
@@ -147,10 +170,6 @@ zones:
       - <%= hostname %><% end %>
 <% end %>
 
-<% if properties.uaa.scim && properties.uaa.scim.external_groups then %>
-  external_groups: <% properties.uaa.scim.external_groups.each do |group| %>
-    - <%= group %><% end %>
-<% end %>
 <% if !properties.uaa.require_https.nil? %>
 require_https: <%= properties.uaa.require_https %>
 <% end %>

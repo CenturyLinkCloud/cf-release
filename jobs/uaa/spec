@@ -24,7 +24,7 @@ templates:
 
 packages:
   - common
-  - ruby-2.1.6
+  - ruby-2.1.7
   - uaa
 
 properties:
@@ -36,6 +36,27 @@ properties:
     description: "Number of seconds in which lockoutAfterFailures failures must occur in order for account to be locked"
   uaa.authentication.policy.lockoutPeriodSeconds:
     description: "Number of seconds to lock out an account when lockoutAfterFailures failures is exceeded"
+  uaa.password.policy.minLength:
+    description: "Minimum number of characters required for password to be considered valid"
+    default: 0
+  uaa.password.policy.maxLength:
+    description: "Maximum number of characters required for password to be considered valid"
+    default: 255
+  uaa.password.policy.requireUpperCaseCharacter:
+    description: "Minimum number of uppercase characters required for password to be considered valid"
+    default: 0
+  uaa.password.policy.requireLowerCaseCharacter:
+    description: "Minimum number of lowercase characters required for password to be considered valid"
+    default: 0
+  uaa.password.policy.requireDigit:
+    description: "Minimum number of digits required for password to be considered valid"
+    default: 0
+  uaa.password.policy.requireSpecialCharacter:
+    description: "Minimum number of special characters required for password to be considered valid"
+    default: 0
+  uaa.password.policy.expirePasswordInMonths:
+    description: "Number of months after which current password expires"
+    default: 0
   uaa.catalina_opts:
     description:
     default: -Xmx768m -XX:MaxPermSize=256m
@@ -75,9 +96,10 @@ properties:
     description:
   uaa.scim.user.override:
     description:
+    default: true
   uaa.scim.userids_enabled:
     description:
-    default: false
+    default: true
   uaa.scim.users:
     description:
   uaa.scim.external_groups:
@@ -98,8 +120,6 @@ properties:
     description: "User name for NATS login"
   nats.machines:
     description: "IP of each NATS cluster member."
-  networks.apps:
-    description: "The App network name"
   uaadb.address:
     description: "The UAA database IP address"
   uaadb.databases:
@@ -226,7 +246,7 @@ properties:
               - hostname2.localhost
               - hostname3.example.com
     default:
-      - uaa.service.consul
+      - uaa.service.cf.internal
   uaa.newrelic:
     description: |
       To enable newrelic monitoring, the sub element of this property will be placed in
@@ -235,6 +255,9 @@ properties:
       The JVM option -javaagent:/path/to/newrelic.jar will be added to Apache Tomcat's startup script
       The enablement of the NewRelic agent in the UAA is triggered by the property uaa.newrelic.common.license_key
       The property uaa.newrelic.common.license_key must be set!
+  uaa.logging_level:
+    description: Set UAA logging level.  (e.g. TRACE, DEBUG, INFO)
+    default: DEBUG
   login.protocol:
     description: "Scheme to use for HTTP communication (http/https)"
   login.ldap.profile_type:
@@ -282,6 +305,12 @@ properties:
     description:
   login.notifications.url:
     description: "The url for the notifications service (configure to use Notifications Service instead of SMTP server)"
+  login.prompt.username.text:
+    description: "The text used to prompt for a username during login"
+    default: Email
+  login.prompt.password.text:
+    description: "The text used to prompt for a password during login"
+    default: Password
   login.smtp:
     description: "SMTP server configuration, for password reset emails etc."
   login.smtp.host:
@@ -328,6 +357,8 @@ properties:
     description: "Deprecated: Use login.saml.providers list objects"
   login.saml.entityid:
     description: "The ID to represent this server"
+  login.saml.entity_base_url:
+    description: "The URL for which SAML identity providers will post assertions to. If set it overrides the default of login.<domain>. This URL should NOT have the schema (http:// or https:// prefix in it) instead just the hostname. The schema is derived by login.protocol property. The default value is #{protocol}://login.#{properties.domain}"
   login.saml.idpEntityAlias:
     description: "Deprecated: Use login.saml.providers list objects"
   login.entity_id:
@@ -362,6 +393,12 @@ properties:
     description: "Timeout in milliseconds for connection pooling for SAML metadata HTTP requests"
   login.saml.socket.soTimeout:
     description: "Read timeout in milliseconds for SAML metadata HTTP requests"
+  login.saml.signMetaData:
+    description: "Set to true, if you wish that the UAA signs its SAML metadata"
+    default: true
+  login.saml.signRequest:
+    description: "Set to true, if you wish the that the UAA signs all its SAML auth requests"
+    default: true
   login.analytics.code:
     description: "Analytics code"
   login.analytics.domain:
@@ -391,6 +428,6 @@ properties:
   login.logout.redirect.parameter.disable:
     description: "When set to false, this allows an operator to leverage an open redirect on the UAA (/logout.do?redirect=google.com). Default value is true. No open redirect enabled"
   login.logout.redirect.parameter.whitelist:
-    description: "A list of URLs. When this list is non null, including empty, and disable=false, 
+    description: "A list of URLs. When this list is non null, including empty, and disable=false,
     logout redirects are allowed, but limited to the whitelist URLs. If a redirect parameter value is not white
     listed, redirect will be to the default URL."

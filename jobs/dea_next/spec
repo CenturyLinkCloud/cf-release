@@ -18,7 +18,7 @@ packages:
 - dea_next
 - warden
 - rootfs_cflinuxfs2
-- ruby-2.1.6
+- ruby-2.1.7
 
 properties:
   domain:
@@ -116,7 +116,7 @@ properties:
   dea_next.stacks:
     default:
       - name: "cflinuxfs2"
-        package_path: "/var/vcap/packages/rootfs_cflinuxfs2"
+        package_path: "/var/vcap/packages/rootfs_cflinuxfs2/rootfs"
     description: "An array of stacks, specifying the name and package path."
   disk_quota_enabled:
     description: "disk quota must be disabled to use warden-inside-warden with the warden cpi"
@@ -129,8 +129,6 @@ properties:
     default: 3456
   metron_endpoint.shared_secret:
     description: "The key used to sign log messages"
-  networks.apps:
-    description: "DEA network information."
 
   router.requested_route_registration_interval_in_seconds:
     description: "Interval at which the router requests routes to be registered."

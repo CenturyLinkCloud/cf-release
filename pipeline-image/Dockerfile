@@ -7,6 +7,7 @@ RUN \
 
 RUN \
   echo "deb http://apt.gemnasium.com stable main" > /etc/apt/sources.list.d/gemnasium.list && \
+  echo "deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe multiverse" > /etc/apt/sources.list.d/backports.list && \
   apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E5CEAB0AC5F1CA2A && \
   apt-get update && \
   apt-get -y install \
@@ -16,6 +17,7 @@ RUN \
     debconf-utils \
     gemnasium-toolbelt \
     git \
+    jq/trusty-backports \
     libcurl4-openssl-dev \
     libmysqlclient-dev \
     libpq-dev \
@@ -53,9 +55,9 @@ RUN \
   tar zxf /tmp/v0.4.1.tar.gz -C /tmp && \
   cd /tmp/ruby-install-0.4.1 && make install && \
   ruby-install ruby 1.9.3-p547 && \
-  ruby-install ruby 2.1.6 && \
+  ruby-install ruby 2.1.7 && \
   rm -rf /usr/local/src/ruby-1.9.3-p547 && \
-  rm -rf /usr/local/src/ruby-2.1.6 && \
+  rm -rf /usr/local/src/ruby-2.1.7 && \
   rm -rf /tmp/*
 
 RUN \
@@ -63,7 +65,7 @@ RUN \
   cd /tmp/chruby && git reset --hard 310bd34d1fcbb3365814c85018114123cef5a41f && \
   cd /tmp/chruby && ./scripts/setup.sh && \
   echo 'source /usr/local/share/chruby/chruby.sh' >> $HOME/.bashrc && \
-  echo 'chruby 2.1.6' >> $HOME/.bashrc && \
+  echo 'chruby 2.1.7' >> $HOME/.bashrc && \
   rm -rf /tmp/*
 
 RUN \
@@ -98,4 +100,10 @@ RUN \
   wget https://s3.amazonaws.com/go-cli/releases/v6.11.3/cf-linux-amd64.tgz -P /tmp && \
   tar xvf /tmp/cf-linux-amd64.tgz -C /usr/local/bin && \
   ln -s /usr/local/bin/cf /usr/local/bin/gcf && \
+  rm -rf /tmp/*
+
+RUN \
+  wget https://s3.amazonaws.com/bosh-init-artifacts/bosh-init-0.0.70-linux-amd64 -P /tmp && \
+  mv /tmp/bosh-init-0.0.70-linux-amd64 /usr/local/bin/bosh-init && \
+  chmod +x /usr/local/bin/bosh-init && \
   rm -rf /tmp/*
