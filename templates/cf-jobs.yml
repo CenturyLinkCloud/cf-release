@@ -201,7 +201,6 @@ jobs:
     networks: (( merge || default_networks ))
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z2 ))
       ha_proxy:
         ssl_pem: ~
         disable_http: false
