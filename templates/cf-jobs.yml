@@ -358,10 +358,11 @@ jobs:
     networks: (( merge || default_networks ))
     properties:
       <<: (( merge ))
-      
+
       consul:
         agent:
           services:
+            <<: (( merge ))
             cloud_controller_ng: {}
             routing-api: {}
       metron_agent:
@@ -384,6 +385,7 @@ jobs:
       consul:
         agent:
           services:
+            <<: (( merge ))
             cloud_controller_ng: {}
             routing-api: {}
       metron_agent:
@@ -612,6 +614,7 @@ properties:
   <<: (( merge ))
   consul:
     agent:
+      datacenter: ~
       log_level: (( merge || nil ))
       servers:
         lan: (( consul_servers ))
