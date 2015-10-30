@@ -221,6 +221,7 @@ jobs:
       - name: cf1
         static_ips: (( merge ))
     properties:
+      <<: (( merge ))
       syslog_daemon_config: ~
       metron_agent:
         zone: z1
@@ -235,6 +236,7 @@ jobs:
       - name: cf2
         static_ips: (( merge ))
     properties:
+      <<: (( merge ))
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
