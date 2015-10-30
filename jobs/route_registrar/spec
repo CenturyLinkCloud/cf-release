@@ -5,6 +5,7 @@ description: "Used for registering routes"
 
 packages:
 - common
+- ruby-2.1.7
 - route_registrar
 
 templates:
@@ -16,4 +17,4 @@ properties:
     default: 20
     description: "The delay in seconds between routing updates"
   route_registrar.routes:
-    description: "Hash of routes that will be registered. Keys are ports (and must be quoted) Values are arrays of hostnames to register."
+    description: "List of routes that will be registered. Array of hashes. Hashes should have port, uris, name, and tags keys. uris is an array of uris to register for the port. Tags are included in the metrics that gorouter emits about things like response time."

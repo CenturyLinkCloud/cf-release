@@ -10,7 +10,7 @@ class RouteRegistrar
   ROUTER_UNREGISTER_TOPIC = "router.unregister"
 
   attr_reader :logger, :message_bus_servers, :type, :host, :port_map,
-    :username, :password, :uri, :tags, :uuid, :index, :private_instance_id, :update_frequency_in_seconds
+    :username, :password, :tags, :uuid, :index, :private_instance_id, :update_frequency_in_seconds
 
   def initialize(config)
     @logger = Steno.logger("route_registrar")
@@ -20,8 +20,6 @@ class RouteRegistrar
     @message_bus_servers = config[:message_bus_servers]
     @host = config[:host]
     @port_map = config[:port_map]
-    @uri = config[:uri]
-    @tags = config[:tags]
     @index = config[:index] || 0
     @update_frequency_in_seconds = config[:update_frequency_in_seconds]
     @private_instance_id = config[:private_instance_id] || SecureRandom.uuid
@@ -34,11 +32,6 @@ class RouteRegistrar
     @registration_timer = EM.add_periodic_timer(update_frequency_in_seconds) do
       send_registration_messages
     end
-  end
-
-  def shutdown(&block)
-    EM.cancel_timer(@registration_timer) if @registration_timer
-    send_unregistration_messages(&block)
   end
 
   private
@@ -56,24 +49,17 @@ class RouteRegistrar
     end
   end
 
-  def send_unregistration_messages(&block)
-    registry_messages.each do |registry_message|
-      logger.info("Sending unregistration: #{registry_message}")
-      message_bus.publish(ROUTER_UNREGISTER_TOPIC, registry_message, &block)
-    end
-  end
-
   def registry_messages
-    port_map.collect do |port, uris|
+    port_map.collect do |item_to_register|
+      puts item_to_register
       {
         :host => host,
-        :port => port.to_i,
-        :uris => Array(uris),
-        :tags => tags,
+        :port => item_to_register['port'].to_i,
+        :uris => item_to_register['uris'],
+        :tags => item_to_register['tags'],
         :private_instance_id => private_instance_id
       }
     end
-
   end
 
   def symbolize_keys(hash)

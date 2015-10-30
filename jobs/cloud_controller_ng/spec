@@ -28,8 +28,8 @@ packages:
   - nginx
   - nginx_newrelic_plugin
   - libpq
-  - mysqlclient
-  - ruby-2.1.7
+  - mysqlclient-5.5
+  - ruby-2.2.3
   - buildpack_java
   - buildpack_java_offline
   - buildpack_ruby
@@ -76,6 +76,9 @@ properties:
   app_ssh.port:
     description: "External port for SSH access to application instances"
     default: 2222
+  app_ssh.oauth_client_id:
+    description: "The oauth client ID of the SSH proxy"
+    default: ssh-proxy
 
   nats.user:
     description: "Username for cc client to connect to NATS"
@@ -148,7 +151,7 @@ properties:
     description: "The directory where operator requested diagnostic files should be placed"
 
   cc.external_protocol:
-    default: "http"
+    default: "https"
     description: "The protocol used to access the CC API from an external entity"
   cc.external_host:
     default: "api"
@@ -219,10 +222,10 @@ properties:
 
   cc.staging_upload_user:
     default: ""
-    description: "S3 Access key for staging droplets on AWS installs; Blobstore user for other IaaSs"
+    description: "User name used to access internal endpoints of Cloud Controller to upload files when staging"
   cc.staging_upload_password:
     default: ""
-    description: "S3 Secure Access Key for staging droplets on AWS installs; Blobstore password for other IaaSs"
+    description: "User's password used to access internal endpoints of Cloud Controller to upload files when staging"
 
   cc.quota_definitions:
     description: "Hash of default quota definitions. Overriden by custom quota definitions."
@@ -265,6 +268,9 @@ properties:
   cc.packages.max_package_size:
     description: "Maximum size of application package"
     default: 1073741824
+  cc.packages.max_valid_packages_stored:
+    description: "Number of recent, valid packages stored per app (not including package for current droplet)"
+    default: 5
   cc.packages.fog_connection:
     description: "Fog connection hash"
   cc.packages.cdn.uri:
@@ -280,6 +286,9 @@ properties:
   cc.droplets.droplet_directory_key:
     description: "Directory (bucket) used store droplets.  It does not have be pre-created."
     default: "cc-droplets"
+  cc.droplets.max_staged_droplets_stored:
+    description: "Number of recent, staged droplets stored per app (not including current droplet)" 
+    default: 5
   cc.droplets.fog_connection:
     description: "Fog connection hash"
   cc.droplets.cdn.uri:
@@ -349,9 +358,7 @@ properties:
     default: "127.0.0.1"
   metron_endpoint.port:
     description: "The port used to emit messages to the Metron agent"
-    default: 3456
-  metron_endpoint.shared_secret:
-    description: "The key used to sign log messages"
+    default: 3457
 
   logger_endpoint.use_ssl:
     description: "Whether to use ssl for logger endpoint listed at /v2/info"
@@ -447,6 +454,21 @@ properties:
     default: "off"
     description: "NewRelic's SQL statement recording mode: [off | obfuscated | raw]"
 
+  cc.nginx_access_log_destination:
+    description: "The nginx access log destination. This can be used to route access logs to a file, syslog, or a memory buffer."
+    default: "/var/vcap/sys/log/nginx_cc/nginx.access.log"
+  cc.nginx_access_log_format:
+    description: "The nginx log format string to use when writing to the access log."
+    default: >
+      $host - [$time_local] "$request" $status $bytes_sent "$http_referer" "$http_user_agent"
+      $proxy_add_x_forwarded_for vcap_request_id:$upstream_http_x_vcap_request_id response_time:$upstream_response_time
+  cc.nginx_error_log_destination:
+    description: "The nginx error log destination. This can be used to route error logs to a file, syslog, or a memory buffer."
+    default: "/var/vcap/sys/log/nginx_cc/nginx.error.log"
+  cc.nginx_error_log_level:
+    descritpion: "The lowest severity nginx log level to capture in the error log."
+    default: error
+
   cc.jobs.local.number_of_workers:
     default: 2
     description: "Number of local cloud_controller_worker workers"
@@ -499,6 +521,9 @@ properties:
   uaa.clients.cloud_controller_username_lookup.secret:
     description: "Used for fetching usernames from UAA."
 
+  uaa.clients.cc_routing.secret:
+    description: "Used for fetching routing information from the Routing API"
+
   cc.install_buildpacks:
     description: "Set of buildpacks to install during deploy"
   cc.app_bits_upload_grace_period_in_seconds:
@@ -529,3 +554,7 @@ properties:
   cc.statsd_port:
     description: "The port for the statsd server, defaults to the local metron agent"
     default: 8125
+
+  cc.placement_top_stager_percentage:
+    description: "The percentage of top stagers considered when choosing a stager"
+    default: 10

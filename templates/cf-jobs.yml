@@ -4,20 +4,30 @@ networks: (( merge ))
 
 lamb_meta: (( merge ))
 
-consul_servers: (( jobs.consul_z1.networks.cf1.static_ips jobs.consul_z2.networks.cf2.static_ips ))
-
 meta:
   environment: ~
 
   release:
     name: cf
 
+  consul_servers: (( merge || jobs.consul_z1.networks.cf1.static_ips jobs.consul_z2.networks.cf2.static_ips ))
+
+  nfs_client_ranges:
+    - (( .networks.cf1.subnets.[0].range || nil ))
+    - (( .networks.cf2.subnets.[0].range || nil ))
+
   nfs_server:
-    address: (( jobs.nfs_z1.networks.cf1.static_ips.[0] || nil ))
-    allow_from_entries:
-      - (( .networks.cf1.subnets.[0].range || nil ))
-      - (( .networks.cf2.subnets.[0].range || nil ))
+    address: (( merge || jobs.nfs_z1.networks.cf1.static_ips.[0] || nil ))
+    allow_from_entries: (( merge || meta.nfs_client_ranges ))
     share: ~
+
+  api_routes:
+  - name: api
+    tags:
+      component: CloudController
+    port: (( .properties.cc.external_port ))
+    uris:
+    - (( "api." .properties.domain ))
 
   api_templates:
   - name: cloud_controller_ng
@@ -29,8 +39,10 @@ meta:
   - name: statsd-injector
     release: (( lamb_meta.release.name ))
   - name: consul_agent
-    release: (( meta.release.name ))
+    release: (( meta.consul_templates.consul_agent.release ))
   - name: nfs_mounter
+    release: (( meta.release.name ))
+  - name: route_registrar
     release: (( meta.release.name ))
 
   api_worker_templates:
@@ -39,7 +51,7 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.release.name ))
+    release: (( meta.consul_templates.consul_agent.release ))
   - name: nfs_mounter
     release: (( meta.release.name ))
 
@@ -49,10 +61,8 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
 
-  nats_templates:
-  - name: nats
-    release: (( meta.release.name ))
-  - name: nats_stream_forwarder
+  consul_templates:
+  - name: consul_agent
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
@@ -65,12 +75,12 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
 
-  router_templates:
-  - name: gorouter
+  etcd_templates:
+  - name: etcd
+    release: (( meta.release.name ))
+  - name: etcd_metrics_server
     release: (( meta.release.name ))
   - name: metron_agent
-    release: (( meta.release.name ))
-  - name: consul_agent
     release: (( meta.release.name ))
 
   ha_proxy_templates:
@@ -79,20 +89,30 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.release.name ))
+    release: (( meta.consul_templates.consul_agent.release ))
 
-  etcd_templates:
-  - name: etcd
-    release: (( meta.release.name ))
-  - name: etcd_metrics_server
+  hm9000_routes:
+  - name: hm9000
+    port: 5155
+    tags:
+      component: HM9K
+    uris:
+    - (( "hm9000." .properties.domain ))
+
+  hm9000_templates:
+  - name: hm9000
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
   - name: clc_fs_check
     release: clc-release
+  - name: route_registrar
+    release: (( meta.release.name ))
 
-  stats_templates:
-  - name: collector
+  nats_templates:
+  - name: nats
+    release: (( meta.release.name ))
+  - name: nats_stream_forwarder
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
@@ -111,24 +131,41 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
 
+  router_templates:
+  - name: gorouter
+    release: (( meta.release.name ))
+  - name: metron_agent
+    release: (( meta.release.name ))
+  - name: consul_agent
+    release: (( meta.consul_templates.consul_agent.release ))
+
+  stats_templates:
+  - name: collector
+    release: (( meta.release.name ))
+  - name: metron_agent
+    release: (( meta.release.name ))
+
+  uaa_routes:
+  - name: uaa
+    port: (( .properties.uaa.port ))
+    tags:
+      component: uaa
+    uris:
+    - (( "uaa." .properties.domain ))
+    - (( "*.uaa." .properties.domain ))
+    - (( "login." .properties.domain ))
+    - (( "*.login." .properties.domain ))
+
   uaa_templates:
   - name: uaa
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
+    release: (( meta.consul_templates.consul_agent.release ))
+  - name: route_registrar
     release: (( meta.release.name ))
-
-  hm9000_templates:
-  - name: hm9000
-    release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
-
-  consul_templates:
-  - name: consul_agent
-    release: (( meta.release.name ))
-  - name: metron_agent
+  - name: statsd-injector
     release: (( meta.release.name ))
 
 jobs:
@@ -140,7 +177,7 @@ jobs:
     resource_pool: small_z1
     networks:
       - name: cf1
-        static_ips: (( merge ))
+        static_ips: (( merge || nil ))
     update:
       serial: true
       max_in_flight: 1
@@ -158,7 +195,7 @@ jobs:
     resource_pool: small_z2
     networks:
       - name: cf2
-        static_ips: (( merge ))
+        static_ips: (( merge || nil ))
     update:
       serial: true
       max_in_flight: 1
@@ -180,12 +217,10 @@ jobs:
     properties:
       <<: (( merge ))
       ha_proxy:
-        ssl_pem: ~
-        disable_http: false
-        ssl_ciphers: ~
       router:
         servers:
-          z1: (( jobs.router_z1.networks.cf1.static_ips ))
+          z1: (( merge || jobs.router_z1.networks.cf1.static_ips ))
+          z2: (( merge || jobs.router_z2.networks.cf2.static_ips ))
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -219,7 +254,7 @@ jobs:
     resource_pool: medium_z1
     networks:
       - name: cf1
-        static_ips: (( merge ))
+        static_ips: (( merge || nil ))
     properties:
       <<: (( merge ))
       syslog_daemon_config: ~
@@ -234,7 +269,7 @@ jobs:
     resource_pool: medium_z2
     networks:
       - name: cf2
-        static_ips: (( merge ))
+        static_ips: (( merge || nil ))
     properties:
       <<: (( merge ))
       metron_agent:
@@ -249,7 +284,7 @@ jobs:
     resource_pool: medium_z1
     networks:
       - name: cf1
-        static_ips: (( merge ))
+        static_ips: (( merge || nil ))
     properties:
       clc_fs_check:
         paths: ~
@@ -266,7 +301,7 @@ jobs:
     resource_pool: medium_z2
     networks:
       - name: cf2
-        static_ips: (( merge ))
+        static_ips: (( merge || nil ))
     properties:
       clc_fs_check:
         paths: ~
@@ -333,6 +368,11 @@ jobs:
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
+      route_registrar:
+        routes: (( merge || meta.uaa_routes ))
+      uaa:
+        proxy:
+          servers: (( merge || jobs.router_z1.networks.cf1.static_ips jobs.router_z2.networks.cf2.static_ips))
     update: (( merge || empty_hash ))
 
   - name: uaa_z2
@@ -349,6 +389,11 @@ jobs:
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
+      route_registrar:
+        routes: (( merge || meta.uaa_routes ))
+      uaa:
+        proxy:
+          servers: (( merge || jobs.router_z1.networks.cf1.static_ips jobs.router_z2.networks.cf2.static_ips))
     update: (( merge || empty_hash ))
 
   - name: api_z1
@@ -371,6 +416,8 @@ jobs:
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
+      route_registrar:
+        routes: (( merge || meta.api_routes ))
       nfs_server: (( meta.nfs_server ))
     update: (( merge || empty_hash ))
 
@@ -384,7 +431,6 @@ jobs:
     networks: (( merge || default_networks ))
     properties:
       <<: (( merge ))
-      
       consul:
         agent:
           services:
@@ -394,6 +440,8 @@ jobs:
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
+      route_registrar:
+        routes: (( merge || meta.api_routes ))
       nfs_server: (( meta.nfs_server ))
     update: (( merge || empty_hash ))
 
@@ -448,6 +496,8 @@ jobs:
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
+      route_registrar:
+        routes: (( merge || meta.hm9000_routes ))
     update: (( merge || empty_hash ))
 
   - name: hm9000_z2
@@ -460,6 +510,8 @@ jobs:
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
+      route_registrar:
+        routes: (( merge || meta.hm9000_routes ))
     update: (( merge || empty_hash ))
 
   - name: runner_z1
@@ -558,9 +610,10 @@ jobs:
     templates: (( merge || meta.router_templates ))
     instances: 1
     resource_pool: router_z1
-    networks:
+    default_networks:
       - name: cf1
-        static_ips: (( merge ))
+        static_ips: ~
+    networks: (( merge || default_networks ))
     properties:
       consul:
         agent:
@@ -575,9 +628,10 @@ jobs:
     templates: (( merge || meta.router_templates ))
     instances: 1
     resource_pool: router_z2
-    networks:
+    default_networks:
       - name: cf2
-        static_ips: (( merge ))
+        static_ips: ~
+    networks: (( merge || default_networks ))
     properties:
       consul:
         agent:
@@ -620,7 +674,7 @@ properties:
       datacenter: ~
       log_level: (( merge || nil ))
       servers:
-        lan: (( consul_servers ))
+        lan: (( meta.consul_servers ))
     ca_cert:
     agent_cert:
     agent_key:
@@ -633,7 +687,7 @@ properties:
     enabled: true
 
   support_address: (( merge || "http://support.cloudfoundry.com" ))
-  description: (( merge || "Cloud Foundry sponsored by Pivotal" ))
+  description: null
   domain: (( merge ))
   ssl:
     skip_cert_verify: (( merge || false ))
@@ -648,24 +702,18 @@ properties:
   nats:
     user: (( merge ))
     password: (( merge ))
-    address: (( jobs.nats_z1.networks.cf1.static_ips.[0] ))
+    address: (( merge || jobs.nats_z1.networks.cf1.static_ips.[0] ))
     port: 4222
-    machines: (( jobs.nats_z1.networks.cf1.static_ips jobs.nats_z2.networks.cf2.static_ips ))
+    machines: (( merge || jobs.nats_z1.networks.cf1.static_ips jobs.nats_z2.networks.cf2.static_ips ))
     debug: false
     trace: false
     monitor_port: 0
     prof_port: 0
 
   etcd:
-    ca_cert:
-    client_cert:
-    client_key:
-    cluster:
-    machines: (( jobs.etcd_z1.networks.cf1.static_ips jobs.etcd_z2.networks.cf2.static_ips ))
-    peer_require_ssl:
-    require_ssl:
-    server_cert:
-    server_key:
+    machines: (( merge || jobs.etcd_z1.networks.cf1.static_ips jobs.etcd_z2.networks.cf2.static_ips ))
+    require_ssl: false
+    peer_require_ssl: false
 
   etcd_metrics_server:
     nats:
@@ -675,9 +723,9 @@ properties:
 
   dea_next:
     memory_mb: (( merge ))
-    memory_overcommit_factor: 3
+    memory_overcommit_factor: null
     disk_mb: (( merge ))
-    disk_overcommit_factor: 2
+    disk_overcommit_factor: null
     staging_disk_inode_limit: 200000
     instance_disk_inode_limit: 200000
     deny_networks: (( merge || [] ))
@@ -693,6 +741,12 @@ properties:
     heartbeat_interval_in_seconds: 10
     rlimit_core: (( merge || 0 ))
     allow_host_access: ~
+    mtu: (( merge || nil ))
+
+  loggregator:
+    <<: (( merge ))
+    etcd:
+      machines: (( .properties.etcd.machines ))
 
   loggregator_endpoint:
     shared_secret: (( merge ))
@@ -707,6 +761,8 @@ properties:
 
   cc: (( merge ))
   ccdb: (( merge ))
+
+  ha_proxy: (( merge || nil ))
 
   hm9000: (( merge ))
 
@@ -726,7 +782,8 @@ properties:
       user: (( merge ))
       password: (( merge ))
     secure_cookies: (( merge || nil ))
-    route_service_secret: (( merge || nil ))
+    route_services_secret: (( merge || nil ))
+    route_services_secret_decrypt_only: (( merge || nil ))
     route_service_timeout: (( merge || nil ))
     logrotate: (( merge || nil ))
     extra_headers_to_log: (( merge || nil ))

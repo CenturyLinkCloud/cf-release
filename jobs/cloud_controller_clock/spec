@@ -17,8 +17,8 @@ packages:
   - nginx
   - nginx_newrelic_plugin
   - libpq
-  - mysqlclient
-  - ruby-2.1.7
+  - mysqlclient-5.5
+  - ruby-2.2.3
 
 properties:
   ssl.skip_cert_verify:
@@ -115,7 +115,7 @@ properties:
     description: "Custom values for /v2/info endpoint"
 
   cc.external_protocol:
-    default: "http"
+    default: "https"
     description: "The protocol used to access the CC API from an external entity"
   cc.external_host:
     default: "api"
@@ -181,10 +181,10 @@ properties:
 
   cc.staging_upload_user:
     default: ""
-    description: "S3 Access key for staging droplets on AWS installs; Blobstore user for other IaaSs"
+    description: "User name used to access internal endpoints of Cloud Controller to upload files when staging"
   cc.staging_upload_password:
     default: ""
-    description: "S3 Secure Access Key for staging droplets on AWS installs; Blobstore password for other IaaSs"
+    description: "User's password used to access internal endpoints of Cloud Controller to upload files when staging"
 
   cc.quota_definitions:
     description: "Hash of default quota definitions. Overriden by custom quota definitions."
@@ -311,9 +311,7 @@ properties:
     default: "127.0.0.1"
   metron_endpoint.port:
     description: "The port used to emit messages to the Metron agent"
-    default: 3456
-  metron_endpoint.shared_secret:
-    description: "The key used to sign log messages"
+    default: 3457
 
   logger_endpoint.use_ssl:
     description: "Whether to use ssl for logger endpoint listed at /v2/info"

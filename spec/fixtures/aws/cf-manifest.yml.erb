@@ -61,9 +61,6 @@ jobs:
     metron_agent:
       zone: z1
     ha_proxy:
-      ssl_ciphers: null
-      ssl_pem: null
-      disable_http: false
     router:
       servers:
         z1:
@@ -213,6 +210,22 @@ jobs:
           uaa: {}
     metron_agent:
       zone: z1
+    route_registrar:
+      routes:
+      - name: uaa
+        port: 8080
+        tags:
+          component: uaa
+        uris:
+        - "uaa.example.com"
+        - "*.uaa.example.com"
+        - "login.example.com"
+        - "*.login.example.com"
+    uaa:
+      proxy:
+        servers:
+          - 0.0.0.5
+          - 0.0.1.5
   resource_pool: medium_z1
   templates:
   - name: uaa
@@ -220,6 +233,10 @@ jobs:
   - name: metron_agent
     release: cf
   - name: consul_agent
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: statsd-injector
     release: cf
   update: {}
 - instances: 1
@@ -233,6 +250,22 @@ jobs:
           uaa: {}
     metron_agent:
       zone: z2
+    route_registrar:
+      routes:
+      - name: uaa
+        port: 8080
+        tags:
+          component: uaa
+        uris:
+        - "uaa.example.com"
+        - "*.uaa.example.com"
+        - "login.example.com"
+        - "*.login.example.com"
+    uaa:
+      proxy:
+        servers:
+          - 0.0.0.5
+          - 0.0.1.5
   resource_pool: medium_z2
   templates:
   - name: uaa
@@ -240,6 +273,10 @@ jobs:
   - name: metron_agent
     release: cf
   - name: consul_agent
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: statsd-injector
     release: cf
   update: {}
 - instances: 1
@@ -261,6 +298,14 @@ jobs:
       - null
       - null
       share: null
+    route_registrar:
+      routes:
+      - name: api
+        port: 9022
+        tags:
+          component: CloudController
+        uris:
+        - "api.example.com"
   resource_pool: large_z1
   templates:
   - name: cloud_controller_ng
@@ -274,6 +319,8 @@ jobs:
   - name: consul_agent
     release: cf
   - name: nfs_mounter
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -295,6 +342,14 @@ jobs:
       - null
       - null
       share: null
+    route_registrar:
+      routes:
+      - name: api
+        port: 9022
+        tags:
+          component: CloudController
+        uris:
+        - "api.example.com"
   resource_pool: large_z2
   templates:
   - name: cloud_controller_ng
@@ -308,6 +363,8 @@ jobs:
   - name: consul_agent
     release: cf
   - name: nfs_mounter
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -382,11 +439,21 @@ jobs:
   properties:
     metron_agent:
       zone: z1
+    route_registrar:
+      routes:
+      - name: hm9000
+        port: 5155
+        tags:
+          component: HM9K
+        uris:
+        - "hm9000.example.com"
   resource_pool: medium_z1
   templates:
   - name: hm9000
     release: cf
   - name: metron_agent
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -396,11 +463,21 @@ jobs:
   properties:
     metron_agent:
       zone: z2
+    route_registrar:
+      routes:
+      - name: hm9000
+        port: 5155
+        tags:
+          component: HM9K
+        uris:
+        - "hm9000.example.com"
   resource_pool: medium_z2
   templates:
   - name: hm9000
     release: cf
   - name: metron_agent
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -505,6 +582,9 @@ jobs:
   update: {}
 - instances: 1
   name: router_z1
+  default_networks:
+    - name: cf1
+      static_ips: ~
   networks:
   - name: cf1
     static_ips:
@@ -527,6 +607,9 @@ jobs:
   update: {}
 - instances: 1
   name: router_z2
+  default_networks:
+    - name: cf2
+      static_ips: ~
   networks:
   - name: cf2
     static_ips:
@@ -597,8 +680,8 @@ properties:
     audit_events:
       cutoff_age_in_days: 31
     broker_client_timeout_seconds: 70
-    broker_client_default_async_poll_interval_seconds: 60
-    broker_client_max_async_poll_duration_minutes: 10080
+    broker_client_default_async_poll_interval_seconds: null
+    broker_client_max_async_poll_duration_minutes: null
     buildpacks:
       buildpack_directory_key: bd_key
       cdn: null
@@ -654,8 +737,10 @@ properties:
         aws_secret_access_key: AWS_SECRET_ACCESS_KEY
         provider: AWS
         region: us-east-1
+      max_staged_droplets_stored: null
     external_host: api
-    external_protocol: http
+    external_port: 9022
+    external_protocol: null
     install_buildpacks:
     - name: staticfile_buildpack
       package: buildpack_staticfile
@@ -716,6 +801,7 @@ properties:
         provider: AWS
         region: us-east-1
       max_package_size: 1073741824
+      max_valid_packages_stored: null
     quota_definitions:
       default:
         memory_limit: 10240
@@ -819,19 +905,20 @@ properties:
     - 10.10.0.0/16
     directory_server_protocol: https
     disk_mb: 2048
-    disk_overcommit_factor: 2
+    disk_overcommit_factor: null
     evacuation_bail_out_time_in_seconds: 600
     heartbeat_interval_in_seconds: 10
     instance_disk_inode_limit: 200000
     kernel_network_tuning_enabled: true
     logging_level: debug
     memory_mb: 1024
-    memory_overcommit_factor: 3
+    memory_overcommit_factor: null
+    mtu: ~
     staging_disk_inode_limit: 200000
     staging_disk_limit_mb: 6144
     staging_memory_limit_mb: 1024
     rlimit_core: 0
-  description: Cloud Foundry sponsored by Pivotal
+  description: null
   disk_quota_enabled: true
   domain: example.com
 <%= lamb_properties("null") %>
@@ -840,14 +927,8 @@ properties:
   dropsonde:
     enabled: true
   etcd:
-    ca_cert: null
-    client_cert: null
-    client_key: null
-    cluster: null
-    peer_require_ssl: null
-    require_ssl: null
-    server_cert: null
-    server_key: null
+    require_ssl: false
+    peer_require_ssl: false
     machines:
     - 0.0.0.10
     - 0.0.0.25
@@ -859,6 +940,7 @@ properties:
       - 0.0.1.1
       password: nats_password
       username: nats_user
+  ha_proxy: null
   logger_endpoint:
     port: 4443
   loggregator_endpoint:
@@ -873,16 +955,13 @@ properties:
     catalina_opts: ~
     invitations_enabled: null
     links:
-      home: https://console.example.com
-      network: null
       passwd: https://console.example.com/password_resets/new
       signup: https://console.example.com/register
-      signup-network: null
     logout: null
     notifications:
       url: null
-    protocol: https
-    restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
+    protocol: null
+    restricted_ips_regex: ~
     saml: null
     self_service_links_enabled: null
     signups_enabled: null
@@ -894,7 +973,6 @@ properties:
     spring_profiles: null
     tiles: null
     uaa_base: null
-    uaa_certificate: null
     url: null
     messages: null
   metron_endpoint:
@@ -981,7 +1059,8 @@ properties:
       user: router_user
     secure_cookies: null
     route_service_timeout: null
-    route_service_secret: null
+    route_services_secret: null
+    route_services_secret_decrypt_only: null
   smoke_tests: null
   ssl:
     skip_cert_verify: false
@@ -997,9 +1076,6 @@ properties:
         countFailuresWithinSeconds: null
         lockoutAfterFailures: null
         lockoutPeriodSeconds: null
-    batch:
-      password: batch_password
-      username: batch_username
     catalina_opts: -Xmx768m -XX:MaxPermSize=256m
     cc:
       client_secret: cc_client_secret
@@ -1029,8 +1105,12 @@ properties:
         authorities: scim.userids
         secret: cloud_controller_username_lookup_secret
         authorized-grant-types: client_credentials
+      cc_routing:
+        authorities: routing.router_groups.read
+        secret: cc_routing_secret
+        authorized-grant-types: client_credentials
       gorouter:
-        authorities: clients.read,clients.write,clients.admin,route.admin,route.advertise
+        authorities: clients.read,clients.write,clients.admin,routing.routes.write,routing.routes.read
         authorized-grant-types: client_credentials,refresh_token
         scope: openid,cloud_controller_service_permissions.read
         secret: gorouter_secret
@@ -1042,7 +1122,8 @@ properties:
     ldap: null
     login: null
     newrelic: null
-    no_ssl: false
+    no_ssl: null
+    port: 8080
     require_https: ~
     restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
     scim:
@@ -1079,7 +1160,7 @@ releases:
 resource_pools:
 - cloud_properties:
     availability_zone: zone_1
-    instance_type: c3.large
+    instance_type: m3.medium
     ephemeral_disk:
       size: 10_240
       type: gp2
@@ -1093,7 +1174,7 @@ resource_pools:
       password: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0
 - cloud_properties:
     availability_zone: zone_2
-    instance_type: c3.large
+    instance_type: m3.medium
     ephemeral_disk:
       size: 10_240
       type: gp2
@@ -1107,7 +1188,7 @@ resource_pools:
       password: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0
 - cloud_properties:
     availability_zone: zone_1
-    instance_type: c3.large
+    instance_type: m3.medium
     ephemeral_disk:
       size: 10_240
       type: gp2
@@ -1121,7 +1202,7 @@ resource_pools:
       password: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0
 - cloud_properties:
     availability_zone: zone_2
-    instance_type: c3.large
+    instance_type: m3.medium
     ephemeral_disk:
       size: 10_240
       type: gp2
@@ -1135,7 +1216,7 @@ resource_pools:
       password: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0
 - cloud_properties:
     availability_zone: zone_1
-    instance_type: m3.large
+    instance_type: m3.medium
     ephemeral_disk:
       size: 65_536
       type: gp2
@@ -1149,7 +1230,7 @@ resource_pools:
       password: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0
 - cloud_properties:
     availability_zone: zone_2
-    instance_type: m3.large
+    instance_type: m3.medium
     ephemeral_disk:
       size: 65_536
       type: gp2
@@ -1223,7 +1304,7 @@ resource_pools:
       password: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0
 - cloud_properties:
     availability_zone: zone_1
-    instance_type: c3.large
+    instance_type: m3.medium
     ephemeral_disk:
       size: 10_240
       type: gp2

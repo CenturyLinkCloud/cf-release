@@ -19,15 +19,14 @@ nats:
 logging:
   file: /var/vcap/sys/log/gorouter/gorouter.log
   syslog: vcap.gorouter
-  level: info
-  <% if_p("metron_endpoint.host", "metron_endpoint.port", "metron_endpoint.shared_secret") do |_| %>
+  level: <%= p("router.logging_level") %>
+  <% if_p("metron_endpoint.host", "metron_endpoint.port") do |_| %>
   loggregator_enabled: true
   <% end %>
 
-<% if_p("metron_endpoint.host", "metron_endpoint.port", "metron_endpoint.shared_secret") do |host, port, shared_secret| %>
+<% if_p("metron_endpoint.host", "metron_endpoint.port") do |host, port| %>
 loggregatorConfig:
   url: <%= host %>:<%= port %>
-  shared_secret: <%= shared_secret %>
 <% end %>
 
 port: <%= p("router.port") %>
@@ -66,7 +65,7 @@ ssl_key_path: /var/vcap/jobs/gorouter/config/key.pem
 cipher_suites: <%= p("router.cipher_suites") %>
 
 route_service_timeout: <%= p("router.route_service_timeout") %>
-route_service_secret: <%= p("router.route_service_secret") %>
-route_service_secret_prev: <%= p("router.route_service_secret_prev") %>
+route_services_secret: <%= p("router.route_services_secret") %>
+route_services_secret_decrypt_only: <%= p("router.route_services_secret_decrypt_only") %>
 
 extra_headers_to_log: <%= p("router.extra_headers_to_log") %>

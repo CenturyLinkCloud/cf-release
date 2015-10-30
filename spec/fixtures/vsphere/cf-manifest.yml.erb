@@ -63,8 +63,6 @@ jobs:
     metron_agent:
       zone: z1
     ha_proxy:
-      ssl_ciphers: null
-      ssl_pem: null
       disable_http: true
     router:
       servers:
@@ -217,6 +215,22 @@ jobs:
           uaa: {}
     metron_agent:
       zone: z1
+    route_registrar:
+      routes:
+      - name: uaa
+        tags:
+          component: uaa
+        port: 8080
+        uris:
+        - "uaa.0.0.0.3.xip.io"
+        - "*.uaa.0.0.0.3.xip.io"
+        - "login.0.0.0.3.xip.io"
+        - "*.login.0.0.0.3.xip.io"
+    uaa:
+      proxy:
+        servers:
+          - 0.0.0.5
+          - 0.0.1.5
   resource_pool: medium_z1
   templates:
   - name: uaa
@@ -224,6 +238,10 @@ jobs:
   - name: metron_agent
     release: cf
   - name: consul_agent
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: statsd-injector
     release: cf
   update: {}
 - instances: 1
@@ -237,6 +255,22 @@ jobs:
           uaa: {}
     metron_agent:
       zone: z2
+    route_registrar:
+      routes:
+      - name: uaa
+        tags:
+          component: uaa
+        port: 8080
+        uris:
+        - "uaa.0.0.0.3.xip.io"
+        - "*.uaa.0.0.0.3.xip.io"
+        - "login.0.0.0.3.xip.io"
+        - "*.login.0.0.0.3.xip.io"
+    uaa:
+      proxy:
+        servers:
+          - 0.0.0.5
+          - 0.0.1.5
   resource_pool: medium_z2
   templates:
   - name: uaa
@@ -245,6 +279,11 @@ jobs:
     release: cf
   - name: consul_agent
     release: cf
+  - name: route_registrar
+    release: cf
+  - name: statsd-injector
+    release: cf
+
   update: {}
 - instances: 1
   name: api_z1
@@ -265,6 +304,14 @@ jobs:
       - null
       - null
       share: null
+    route_registrar:
+      routes:
+      - name: api
+        port: 9022
+        tags:
+          component: CloudController
+        uris:
+        - "api.0.0.0.3.xip.io"
   resource_pool: large_z1
   templates:
   - name: cloud_controller_ng
@@ -278,6 +325,8 @@ jobs:
   - name: consul_agent
     release: cf
   - name: nfs_mounter
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -299,6 +348,14 @@ jobs:
       - null
       - null
       share: null
+    route_registrar:
+      routes:
+      - name: api
+        port: 9022
+        tags:
+          component: CloudController
+        uris:
+        - "api.0.0.0.3.xip.io"
   resource_pool: large_z2
   templates:
   - name: cloud_controller_ng
@@ -312,6 +369,8 @@ jobs:
   - name: consul_agent
     release: cf
   - name: nfs_mounter
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -386,11 +445,21 @@ jobs:
   properties:
     metron_agent:
       zone: z1
+    route_registrar:
+      routes:
+      - name: hm9000
+        port: 5155
+        tags:
+          component: HM9K
+        uris:
+        - "hm9000.0.0.0.3.xip.io"
   resource_pool: medium_z1
   templates:
   - name: hm9000
     release: cf
   - name: metron_agent
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -400,11 +469,21 @@ jobs:
   properties:
     metron_agent:
       zone: z2
+    route_registrar:
+      routes:
+      - name: hm9000
+        port: 5155
+        tags:
+          component: HM9K
+        uris:
+        - "hm9000.0.0.0.3.xip.io"
   resource_pool: medium_z2
   templates:
   - name: hm9000
     release: cf
   - name: metron_agent
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -509,6 +588,9 @@ jobs:
   update: {}
 - instances: 1
   name: router_z1
+  default_networks:
+    - name: cf1
+      static_ips: ~
   networks:
   - name: cf1
     static_ips:
@@ -531,6 +613,9 @@ jobs:
   update: {}
 - instances: 1
   name: router_z2
+  default_networks:
+    - name: cf2
+      static_ips: ~
   networks:
   - name: cf2
     static_ips:
@@ -601,8 +686,8 @@ properties:
     audit_events:
       cutoff_age_in_days: 31
     broker_client_timeout_seconds: 70
-    broker_client_default_async_poll_interval_seconds: 60
-    broker_client_max_async_poll_duration_minutes: 10080
+    broker_client_default_async_poll_interval_seconds: null
+    broker_client_max_async_poll_duration_minutes: null
     buildpacks:
       buildpack_directory_key: bd_key
       cdn: null
@@ -650,8 +735,10 @@ properties:
       cdn: null
       droplet_directory_key: the_key
       fog_connection: null
+      max_staged_droplets_stored: null
     external_host: api
-    external_protocol: http
+    external_port: 9022
+    external_protocol: null
     install_buildpacks:
     - name: staticfile_buildpack
       package: buildpack_staticfile
@@ -708,6 +795,7 @@ properties:
       cdn: null
       fog_connection: null
       max_package_size: 1073741824
+      max_valid_packages_stored: null
     quota_definitions:
       default:
         memory_limit: 10240
@@ -824,19 +912,20 @@ properties:
     deny_networks: []
     directory_server_protocol: https
     disk_mb: 2048
-    disk_overcommit_factor: 2
+    disk_overcommit_factor: null
     evacuation_bail_out_time_in_seconds: 600
     heartbeat_interval_in_seconds: 10
     instance_disk_inode_limit: 200000
     kernel_network_tuning_enabled: true
     logging_level: debug
     memory_mb: 1024
-    memory_overcommit_factor: 3
+    memory_overcommit_factor: null
+    mtu: ~
     staging_disk_inode_limit: 200000
     staging_disk_limit_mb: 6144
     staging_memory_limit_mb: 1024
     rlimit_core: 0
-  description: Cloud Foundry sponsored by Pivotal
+  description: null
   disk_quota_enabled: true
   domain: 0.0.0.3.xip.io
   doppler_endpoint:
@@ -844,14 +933,8 @@ properties:
   dropsonde:
     enabled: true
   etcd:
-    ca_cert: null
-    client_cert: null
-    client_key: null
-    cluster: null
-    peer_require_ssl: null
-    require_ssl: null
-    server_cert: null
-    server_key: null
+    require_ssl: false
+    peer_require_ssl: false
     machines:
     - 0.0.0.14
     - 0.0.0.15
@@ -863,6 +946,7 @@ properties:
       - 0.0.1.1
       password: nats_password
       username: nats_user
+  ha_proxy: null
   logger_endpoint: null
 <%= lamb_properties("null") %>
   loggregator_endpoint:
@@ -877,19 +961,16 @@ properties:
     catalina_opts: null
     invitations_enabled: null
     links:
-      home: https://console.0.0.0.3.xip.io
-      network: null
       passwd: https://console.0.0.0.3.xip.io/password_resets/new
       signup: https://console.0.0.0.3.xip.io/register
-      signup-network: null
     logout:
       redirect:
         parameter:
           disable: false
     notifications:
       url: null
-    protocol: http
-    restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
+    protocol: null
+    restricted_ips_regex: ~
     saml: null
     self_service_links_enabled: null
     signups_enabled: null
@@ -901,7 +982,6 @@ properties:
     spring_profiles: null
     tiles: null
     uaa_base: null
-    uaa_certificate: null
     url: null
     messages: null
   metron_endpoint:
@@ -988,7 +1068,8 @@ properties:
       user: router_user
     secure_cookies: null
     route_service_timeout: null
-    route_service_secret: null
+    route_services_secret: null
+    route_services_secret_decrypt_only: null
   smoke_tests: null
   ssl:
     skip_cert_verify: false
@@ -1004,9 +1085,6 @@ properties:
         countFailuresWithinSeconds: null
         lockoutAfterFailures: null
         lockoutPeriodSeconds: null
-    batch:
-      password: batch_password
-      username: batch_username
     catalina_opts: -Xmx768m -XX:MaxPermSize=256m
     cc:
       client_secret: cc_client_secret
@@ -1019,7 +1097,7 @@ properties:
         authorities: oauth.login,scim.write,clients.read,notifications.write,critical_notifications.write,emails.write,scim.userids,password.write
         authorized-grant-types: authorization_code,client_credentials,refresh_token
         override: true
-        redirect-uri: http://login.0.0.0.3.xip.io
+        redirect-uri: https://login.0.0.0.3.xip.io
         scope: openid,oauth.approvals
         secret: login_client_secret
       notifications:
@@ -1034,8 +1112,12 @@ properties:
         authorities: scim.userids
         secret: cloud_controller_username_lookup_secret
         authorized-grant-types: client_credentials
+      cc_routing:
+        authorities: routing.router_groups.read
+        secret: cc_routing_secret
+        authorized-grant-types: client_credentials
       gorouter:
-        authorities: clients.read,clients.write,clients.admin,route.admin,route.advertise
+        authorities: clients.read,clients.write,clients.admin,routing.routes.write,routing.routes.read
         authorized-grant-types: client_credentials,refresh_token
         scope: openid,cloud_controller_service_permissions.read
         secret: gorouter_secret
@@ -1047,7 +1129,8 @@ properties:
     ldap: null
     login: null
     newrelic: null
-    no_ssl: false
+    no_ssl: null
+    port: 8080
     require_https: ~
     restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
     scim:
