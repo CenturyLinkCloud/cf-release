@@ -82,6 +82,8 @@ meta:
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
+  - name: clc_fs_check
+    release: clc-release
 
   ha_proxy_templates:
   - name: haproxy
@@ -104,8 +106,6 @@ meta:
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
-  - name: clc_fs_check
-    release: clc-release
   - name: route_registrar
     release: (( meta.release.name ))
 
