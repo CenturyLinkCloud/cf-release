@@ -10,7 +10,7 @@ templates:
 packages:
 - common
 - collector
-- ruby-2.1.6
+- ruby-2.1.7
 
 properties:
   collector.aws.access_key_id:
@@ -75,5 +75,3 @@ properties:
     description: "NATS TCP port"
   nats.user:
     description: "NATS user"
-  networks.apps:
-    description: "Collector network information."

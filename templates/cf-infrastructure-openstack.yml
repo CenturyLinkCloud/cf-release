@@ -36,9 +36,6 @@ properties:
     catalina_opts: -Xmx768m -XX:MaxPermSize=256m
     clients: (( merge ))
 
-  login:
-    catalina_opts: -Xmx768m -XX:MaxPermSize=256m
-
   dea_next:
     deny_networks: (( merge || nil ))
     allow_networks: (( merge || nil ))
@@ -166,18 +163,6 @@ jobs:
       - name: cf1
         static_ips: (( static_ips(5, 21) ))
 
-  - name: routing_api_z1
-    instances: 0
-    networks:
-      - name: cf1
-        static_ips: (( static_ips(11) ))
-
-  - name: routing_api_z2
-    instances: 0
-    networks:
-      - name: cf2
-        static_ips: []
-
   - name: loggregator_z1
     instances: 0
     networks:
@@ -200,7 +185,7 @@ jobs:
         static_ips: (( static_ips(8, 9, 10) ))
 
   - name: consul_z1
-    instances: 0
+    instances: 1
     networks:
       - name: cf1
         static_ips: (( static_ips(12, 13, 14) ))
@@ -264,7 +249,4 @@ jobs:
     instances: 0
 
   - name: runner_z2
-    instances: 0
-
-  - name: login_z2
     instances: 0
