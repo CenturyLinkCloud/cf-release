@@ -10,6 +10,9 @@ meta:
   release:
     name: cf
 
+  clc_consul_release:
+    name: clc-consul
+
   consul_servers: (( merge || jobs.consul_z1.networks.cf1.static_ips jobs.consul_z2.networks.cf2.static_ips ))
 
   nfs_client_ranges:
@@ -39,7 +42,7 @@ meta:
   - name: statsd-injector
     release: (( lamb_meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
+    release: (( meta.clc_consul_release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
   - name: route_registrar
@@ -51,7 +54,7 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
+    release: (( meta.clc_consul_release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
 
@@ -63,7 +66,7 @@ meta:
 
   consul_templates:
   - name: consul_agent
-    release: (( meta.release.name ))
+    release: (( meta.clc_consul_release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
 
@@ -91,7 +94,7 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
+    release: (( meta.clc_consul_release.name ))
 
   hm9000_routes:
   - name: hm9000
@@ -137,7 +140,7 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
+    release: (( meta.clc_consul_release.name ))
 
   stats_templates:
   - name: collector
@@ -162,7 +165,7 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
+    release: (( meta.clc_consul_release.name ))
   - name: route_registrar
     release: (( meta.release.name ))
   - name: statsd-injector
@@ -363,6 +366,7 @@ jobs:
     properties:
       consul:
         agent:
+          recursors: ~
           services:
             uaa: {}
       metron_agent:
@@ -384,6 +388,7 @@ jobs:
     properties:
       consul:
         agent:
+          recursors: ~
           services:
             uaa: {}
       metron_agent:
@@ -406,9 +411,9 @@ jobs:
     networks: (( merge || default_networks ))
     properties:
       <<: (( merge ))
-
       consul:
         agent:
+          recursors: ~
           services:
             <<: (( merge ))
             cloud_controller_ng: {}
@@ -433,6 +438,7 @@ jobs:
       <<: (( merge ))
       consul:
         agent:
+          recursors: ~
           services:
             <<: (( merge ))
             cloud_controller_ng: {}
@@ -466,6 +472,9 @@ jobs:
     networks:
       - name: cf1
     properties:
+      consul:
+        agent:
+          recursors: ~
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -480,6 +489,9 @@ jobs:
     networks:
       - name: cf2
     properties:
+      consul:
+        agent:
+          recursors: ~
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -617,6 +629,7 @@ jobs:
     properties:
       consul:
         agent:
+          recursors: ~
           services:
             gorouter: {}
       metron_agent:
@@ -635,6 +648,7 @@ jobs:
     properties:
       consul:
         agent:
+          recursors: ~
           services:
             gorouter: {}
       metron_agent:
