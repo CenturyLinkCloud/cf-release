@@ -10,6 +10,9 @@ meta:
   release:
     name: cf
 
+  clc_release:
+    name: clc-release
+
   consul_servers: (( merge || jobs.consul_z1.networks.cf1.static_ips jobs.consul_z2.networks.cf2.static_ips ))
 
   nfs_client_ranges:
@@ -40,6 +43,8 @@ meta:
     release: (( lamb_meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
+  - name: clc_consul_recursors
+    release: (( meta.clc_release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
   - name: route_registrar
@@ -52,6 +57,8 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
+  - name: clc_consul_recursors
+    release: (( meta.clc_release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
 
@@ -64,6 +71,8 @@ meta:
   consul_templates:
   - name: consul_agent
     release: (( meta.release.name ))
+  - name: clc_consul_recursors
+    release: (( meta.clc_release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
 
@@ -83,7 +92,7 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: clc_fs_check
-    release: clc-release
+    release: (( meta.clc_release.name ))
 
   ha_proxy_templates:
   - name: haproxy
@@ -92,6 +101,8 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
+  - name: clc_consul_recursors
+    release: (( meta.clc_release.name ))
 
   hm9000_routes:
   - name: hm9000
@@ -123,7 +134,7 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: clc_fs_check
-    release: clc-release
+    release: (( meta.clc_release.name ))
 
   postgres_templates:
   - name: postgres
@@ -138,6 +149,8 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
+  - name: clc_consul_recursors
+    release: (( meta.clc_release.name ))
 
   stats_templates:
   - name: collector
@@ -163,6 +176,8 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
+  - name: clc_consul_recursors
+    release: (( meta.clc_release.name ))
   - name: route_registrar
     release: (( meta.release.name ))
   - name: statsd-injector
@@ -685,6 +700,8 @@ properties:
     require_ssl:
     server_cert:
     server_key:
+
+  clc_consul_recursors: (( merge || nil ))
 
   dropsonde:
     enabled: true
