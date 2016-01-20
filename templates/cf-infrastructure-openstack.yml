@@ -5,7 +5,9 @@ meta:
 
   openstack: (( merge ))
 
-  stemcell:
+  stemcell: (( merge || .meta.default_stemcell ))
+
+  default_stemcell:
     name: bosh-openstack-kvm-ubuntu-trusty-go_agent
     version: latest
 
@@ -77,7 +79,6 @@ properties:
       - tag: admin
         name: uaaadmin
         password: (( merge ))
-
     databases:
       - <<: (( merge ))
       - tag: cc
@@ -86,6 +87,8 @@ properties:
       - tag: uaa
         name: uaadb
         citext: true
+    collect_statement_statistics: null
+    additional_config: (( merge || nil ))
 
 compilation:
   cloud_properties: (( merge || meta.resource_pools.medium.cloud_properties ))
@@ -130,8 +133,8 @@ jobs:
   - name: ha_proxy_z1
     instances: 1
     networks:
-      # Setting floating IP does not work in 
-      # current CLC infrastructure and it 
+      # Setting floating IP does not work in
+      # current CLC infrastructure and it
       # seems hard ot remove a network referenced elsewhere:
       # - name: floating
       #   static_ips: (( meta.floating_static_ips ))
@@ -189,7 +192,7 @@ jobs:
     networks:
       - name: cf1
         static_ips: (( static_ips(12, 13, 14) ))
-        
+
   - name: ha_proxy_z2
     instances: 0
     networks:
@@ -214,13 +217,13 @@ jobs:
     networks:
       - name: cf2
         static_ips: []
-        
+
   - name: consul_z2
     instances: 0
     networks:
       - name: cf2
         static_ips: []
-        
+
   - name: loggregator_z2
     instances: 0
     networks:

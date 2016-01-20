@@ -5,7 +5,9 @@ meta:
     provider: Local
     local_root: /var/vcap/store
 
-  stemcell:
+  stemcell: (( merge || .meta.default_stemcell ))
+
+  default_stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
     version: latest
 
@@ -109,6 +111,10 @@ properties:
         secret: cc-routing-secret
       gorouter:
         secret: gorouter-secret
+      tcp_emitter:
+        secret: tcp-emitter-secret
+      tcp_router:
+        secret: tcp-router-secret
     scim:
       users:
       - admin|admin|scim.write,scim.read,openid,cloud_controller.admin,clients.read,clients.write,doppler.firehose,routing.router_groups.read
@@ -118,7 +124,8 @@ properties:
       user: router
       password: router
     ssl_skip_validation: true
-    route_services_secret: emc1Bu39coo4mcz+iaecPAL2wCeo4VB1+6s099ZYu/M=
+    route_services_secret: route-services-secret
+    enable_routing_api: true
 
   ccdb:
     db_scheme: postgres
@@ -164,6 +171,8 @@ properties:
       - tag: uaa
         name: uaadb
         citext: true
+    collect_statement_statistics: null
+    additional_config: (( merge || nil ))
 
   acceptance_tests:
     <<: (( merge || nil ))
@@ -174,7 +183,7 @@ properties:
     skip_ssl_validation: true
     nodes: 1
     system_domain: (( domain ))
-    client_secret: gorouter-secret
+    client_secret: tcp-emitter-secret
     include_routing: true
     use_http: true
 
@@ -471,20 +480,6 @@ jobs:
     instances: 0
   - name: api_worker_z2
     instances: 0
-
-  # smaller persistent disk for logs, and set up static IPs
-  - name: logs_z1
-    instances: 0
-    persistent_disk: 4096
-    networks:
-      - name: cf1
-        static_ips: (( static_ips(0) ))
-  - name: logs_z2
-    instances: 0
-    persistent_disk: 4096
-    networks:
-      - name: cf2
-        static_ips: (( static_ips(0) ))
 
   # no collector
   - name: stats_z1

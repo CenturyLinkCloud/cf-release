@@ -18,7 +18,7 @@ packages:
   - nginx_newrelic_plugin
   - libpq
   - mysqlclient-5.5
-  - ruby-2.2.3
+  - ruby-2.2.4
 
 properties:
   ssl.skip_cert_verify:
@@ -90,6 +90,9 @@ properties:
     default: 31
   cc.app_usage_events.cutoff_age_in_days:
     description: "How old an app usage event should stay in cloud controller database before being cleaned up"
+    default: 31
+  cc.service_usage_events.cutoff_age_in_days:
+    description: "How old a service usage event should stay in cloud controller database before being cleaned up"
     default: 31
   cc.audit_events.cutoff_age_in_days:
     description: "How old an audit event should stay in cloud controller database before being cleaned up"
@@ -289,11 +292,11 @@ properties:
 
   uaa.cc.token_secret:
     description:
-  uaa.no_ssl:
-    description: "when true, uaa uses http, otherwise it uses https"
-    default: false
   uaa.url:
     description:
+  login.protocol:
+    description: "http or https"
+    default: "https"
   login.url:
     description:
   hm9000.url:
