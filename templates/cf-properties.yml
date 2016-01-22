@@ -302,6 +302,8 @@ properties:
 
     user: ~
 
+    client: ~
+
     clients:
       <<: (( merge || nil ))
       login:
