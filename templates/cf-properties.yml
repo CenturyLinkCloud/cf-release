@@ -302,8 +302,6 @@ properties:
 
     user: ~
 
-    client: ~
-
     clients:
       <<: (( merge || nil ))
       login:
@@ -314,6 +312,7 @@ properties:
         authorized-grant-types: authorization_code,client_credentials,refresh_token
         redirect-uri: (( "https://login." domain ))
       cf:
+        autoapprove: true
         id: cf
         override: true
         authorized-grant-types: implicit,password,refresh_token

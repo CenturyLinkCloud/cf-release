@@ -42,8 +42,6 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
-  - name: clc_consul_recursors
-    release: (( meta.clc_release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
   - name: route_registrar
@@ -56,8 +54,6 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
-  - name: clc_consul_recursors
-    release: (( meta.clc_release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
 
@@ -70,8 +66,6 @@ meta:
   consul_templates:
   - name: consul_agent
     release: (( meta.release.name ))
-  - name: clc_consul_recursors
-    release: (( meta.clc_release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
 
@@ -100,8 +94,6 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
-  - name: clc_consul_recursors
-    release: (( meta.clc_release.name ))
 
   hm9000_routes:
   - name: hm9000
@@ -174,8 +166,6 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
-  - name: clc_consul_recursors
-    release: (( meta.clc_release.name ))
 
   stats_templates:
   - name: collector
@@ -201,8 +191,6 @@ meta:
     release: (( meta.release.name ))
   - name: consul_agent
     release: (( meta.consul_templates.consul_agent.release ))
-  - name: clc_consul_recursors
-    release: (( meta.clc_release.name ))
   - name: route_registrar
     release: (( meta.release.name ))
   - name: statsd-injector
@@ -747,8 +735,6 @@ properties:
     require_ssl:
     server_cert:
     server_key:
-
-  clc_consul_recursors: (( merge || nil ))
 
   dropsonde:
     enabled: true
