@@ -25,7 +25,6 @@ cd /var/vcap/packages/acceptance-tests/src/github.com/cloudfoundry/cf-acceptance
 echo '################################################################################################################'
 echo $(go version)
 echo CONFIG=$CONFIG
-cat $CONFIG
 env | sort
 echo '################################################################################################################'
 
@@ -43,6 +42,7 @@ skipPackages+=<%= properties.acceptance_tests.include_operator ? "" : "operator,
 skipPackages+=<%= properties.acceptance_tests.include_internet_dependent ? "" : "internet_dependent," %>
 skipPackages+=<%= properties.acceptance_tests.include_services ? "" : "services," %>
 skipPackages+=<%= properties.acceptance_tests.include_routing ? "" : "routing," %>
+skipPackages+=<%= properties.acceptance_tests.include_routing_api ? "" : "routing_api," %>
 [[ $skipPackages == *, ]] && skipPackages=${skipPackages%?} # strip trailing comma
 
 <% skips = [] %>
@@ -52,8 +52,9 @@ skipPackages+=<%= properties.acceptance_tests.include_routing ? "" : "routing," 
 skips=<%= skips.empty? ? "" : %Q[-skip="#{skips.join("|")}"] %>
 
 verbose=<%= properties.acceptance_tests.verbose ? "-v" : "" %>
+noColorFlag=<%= properties.acceptance_tests.enable_color ? "" : "-noColor" %>
 
-bin/test -r -noColor -slowSpecThreshold=120 -randomizeAllSpecs $verbose -nodes=$nodes $skipPackages $skips -keepGoing || EXITSTATUS=$?
+bin/test -r $noColorFlag -slowSpecThreshold=120 -randomizeAllSpecs $verbose -nodes=$nodes $skipPackages $skips -keepGoing || EXITSTATUS=$?
 
 echo "Acceptance Tests Complete; exit status: $EXITSTATUS"
 

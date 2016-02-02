@@ -64,9 +64,6 @@
 [submodule "packages/ruby"]
 	path = packages/ruby
 	url = https://github.com/cloudfoundry/ruby-package
-[submodule "src/uaa"]
-	path = src/uaa
-	url = https://github.com/cloudfoundry/uaa.git
 [submodule "src/buildpacks/ruby"]
 	path = src/buildpacks/ruby
 	url = https://github.com/cloudfoundry/heroku-buildpack-ruby.git
@@ -82,9 +79,6 @@
 [submodule "packages/ruby-2.1.4"]
 	path = packages/ruby-2.1.4
 	url = https://github.com/cloudfoundry/ruby-package
-[submodule "src/github.com/cloudfoundry-incubator/routing-api"]
-	path = src/github.com/cloudfoundry-incubator/routing-api
-	url = https://github.com/cloudfoundry-incubator/routing-api.git
 [submodule "src/etcd-release"]
 	path = src/etcd-release
 	url = https://github.com/cloudfoundry-incubator/etcd-release.git
@@ -97,3 +91,12 @@
 [submodule "src/consul-release"]
 	path = src/consul-release
 	url = https://github.com/cloudfoundry-incubator/consul-release.git
+[submodule "src/cf-routing-release"]
+	path = src/cf-routing-release
+	url = https://github.com/cloudfoundry-incubator/cf-routing-release.git
+[submodule "src/uaa-release"]
+	path = src/uaa-release
+	url = https://github.com/cloudfoundry/uaa-release
+[submodule "src/github.com/cloudfoundry-incubator/route-registrar"]
+	path = src/github.com/cloudfoundry-incubator/route-registrar
+	url = https://github.com/cloudfoundry-incubator/route-registrar

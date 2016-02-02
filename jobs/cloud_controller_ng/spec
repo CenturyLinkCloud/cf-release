@@ -29,7 +29,7 @@ packages:
   - nginx_newrelic_plugin
   - libpq
   - mysqlclient-5.5
-  - ruby-2.2.3
+  - ruby-2.2.4
   - buildpack_java
   - buildpack_java_offline
   - buildpack_ruby
@@ -125,6 +125,9 @@ properties:
     default: 31
   cc.app_usage_events.cutoff_age_in_days:
     description: "How old an app usage event should stay in cloud controller database before being cleaned up"
+    default: 31
+  cc.service_usage_events.cutoff_age_in_days:
+    description: "How old a service usage event should stay in cloud controller database before being cleaned up"
     default: 31
   cc.audit_events.cutoff_age_in_days:
     description: "How old an audit event should stay in cloud controller database before being cleaned up"
@@ -336,11 +339,11 @@ properties:
 
   uaa.cc.token_secret:
     description:
-  uaa.no_ssl:
-    description: "when true, uaa uses http, otherwise it uses https"
-    default: false
   uaa.url:
     description:
+  login.protocol:
+    description: "http or https"
+    default: "https"
   login.url:
     description:
   hm9000.url:
@@ -466,7 +469,7 @@ properties:
     description: "The nginx error log destination. This can be used to route error logs to a file, syslog, or a memory buffer."
     default: "/var/vcap/sys/log/nginx_cc/nginx.error.log"
   cc.nginx_error_log_level:
-    descritpion: "The lowest severity nginx log level to capture in the error log."
+    description: "The lowest severity nginx log level to capture in the error log."
     default: error
 
   cc.jobs.local.number_of_workers:
@@ -558,3 +561,7 @@ properties:
   cc.placement_top_stager_percentage:
     description: "The percentage of top stagers considered when choosing a stager"
     default: 10
+
+  router.route_services_secret:
+    description: "Support for route services is disabled when no value is configured."
+    default: ""
