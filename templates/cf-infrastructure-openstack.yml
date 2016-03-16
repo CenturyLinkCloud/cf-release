@@ -146,7 +146,7 @@ jobs:
     instances: 1
     networks:
       - name: cf1
-        static_ips: (( static_ips(2) ))
+        static_ips: (( static_ips(2, 22) ))
 
   - name: nfs_z1
     instances: 1
@@ -197,20 +197,20 @@ jobs:
     instances: 0
     networks:
       - name: cf2
-        static_ips: (( static_ips(0, 20) ))
+        static_ips: []
         default: (( merge || nil ))
 
   - name: nats_z2
     instances: 0
     networks:
       - name: cf2
-        static_ips: (( static_ips(2) ))
+        static_ips: []
 
   - name: router_z2
     instances: 0
     networks:
       - name: cf2
-        static_ips: (( static_ips(5, 21) ))
+        static_ips: []
 
   - name: etcd_z2
     instances: 0
