@@ -7,6 +7,12 @@ meta:
 
   release:
     name: cf
+  capi_release:
+    name: cf
+  consul_release:
+    name: cf
+  etcd_release:
+    name: cf
 
   clc_release:
     name: clc-release
@@ -27,6 +33,7 @@ meta:
     tags:
       component: CloudController
     port: (( .properties.cc.external_port ))
+    registration_interval: 20s
     uris:
     - (( "api." .properties.domain ))
 
@@ -34,42 +41,58 @@ meta:
     cloud_controller_ng: {}
 
   api_templates:
-  - name: cloud_controller_ng
+  - name: consul_agent
+    release: (( meta.consul_release.name ))
+  - name: java-buildpack
     release: (( meta.release.name ))
+  - name: java-offline-buildpack
+    release: (( meta.release.name ))
+  - name: go-buildpack
+    release: (( meta.release.name ))
+  - name: binary-buildpack
+    release: (( meta.release.name ))
+  - name: nodejs-buildpack
+    release: (( meta.release.name ))
+  - name: ruby-buildpack
+    release: (( meta.release.name ))
+  - name: php-buildpack
+    release: (( meta.release.name ))
+  - name: python-buildpack
+    release: (( meta.release.name ))
+  - name: staticfile-buildpack
+    release: (( meta.release.name ))
+  - name: cloud_controller_ng
+    release: (( meta.capi_release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
   - name: statsd-injector
-    release: (( meta.release.name ))
-  - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
-  - name: nfs_mounter
     release: (( meta.release.name ))
   - name: route_registrar
     release: (( meta.release.name ))
 
   api_worker_templates:
-  - name: cloud_controller_worker
-    release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
-  - name: nfs_mounter
+    release: (( meta.consul_release.name ))
+  - name: cloud_controller_worker
+    release: (( meta.capi_release.name ))
+  - name: metron_agent
     release: (( meta.release.name ))
 
   clock_templates:
   - name: cloud_controller_clock
-    release: (( meta.release.name ))
+    release: (( meta.capi_release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
 
   consul_templates:
   - name: consul_agent
-    release: (( meta.release.name ))
+    release: (( meta.consul_release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
 
   dea_templates:
+  - name: consul_agent
+    release: (( meta.consul_release.name ))
   - name: dea_next
     release: (( meta.release.name ))
   - name: dea_logging_agent
@@ -79,9 +102,9 @@ meta:
 
   etcd_templates:
   - name: etcd
-    release: (( meta.release.name ))
+    release: (( meta.etcd_release.name ))
   - name: etcd_metrics_server
-    release: (( meta.release.name ))
+    release: (( meta.etcd_release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
   - name: clc_fs_check
@@ -93,17 +116,20 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
+    release: (( meta.consul_release.name ))
 
   hm9000_routes:
   - name: hm9000
     port: (( .properties.hm9000.port ))
+    registration_interval: 20s
     tags:
       component: HM9K
     uris:
     - (( "hm9000." .properties.domain ))
 
   hm9000_templates:
+  - name: consul_agent
+    release: (( meta.consul_release.name ))
   - name: hm9000
     release: (( meta.release.name ))
   - name: metron_agent
@@ -122,10 +148,12 @@ meta:
   loggregator_trafficcontroller_routes:
   - name: doppler
     port: (( .properties.loggregator.outgoing_dropsonde_port ))
+    registration_interval: 20s
     uris:
     - (( "doppler." .properties.domain ))
   - name: loggregator
     port: (( .properties.traffic_controller.outgoing_port ))
+    registration_interval: 20s
     uris:
     - (( "loggregator." .properties.domain ))
 
@@ -145,10 +173,35 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
 
-  nfs_templates:
-  - name: debian_nfs_server
-    release: (( meta.release.name ))
+  blobstore_routes:
+  - name: blobstore
+    port: (( .properties.blobstore.port ))
+    registration_interval: 20s
+    tags:
+      component: blobstore
+    uris:
+    - (( "blobstore." .properties.domain ))
+
+  blobstore_templates:
+  - name: consul_agent
+    release: (( meta.consul_release.name ))
   - name: metron_agent
+    release: (( meta.release.name ))
+  - name: blobstore
+    release: (( meta.capi_release.name ))
+  - name: route_registrar
+    release: (( meta.release.name ))
+
+  nfs_templates:
+  - name: consul_agent
+    release: (( meta.consul_release.name ))
+  - name: debian_nfs_server
+    release: (( meta.capi_release.name ))
+  - name: metron_agent
+    release: (( meta.release.name ))
+  - name: blobstore
+    release: (( meta.capi_release.name ))
+  - name: route_registrar
     release: (( meta.release.name ))
   - name: clc_fs_check
     release: (( meta.clc_release.name ))
@@ -160,12 +213,12 @@ meta:
     release: (( meta.release.name ))
 
   router_templates:
+  - name: consul_agent
+    release: (( meta.consul_release.name ))
   - name: gorouter
     release: (( meta.release.name ))
   - name: metron_agent
     release: (( meta.release.name ))
-  - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
 
   stats_templates:
   - name: collector
@@ -176,6 +229,7 @@ meta:
   uaa_routes:
   - name: uaa
     port: (( .properties.uaa.port ))
+    registration_interval: 4s
     tags:
       component: uaa
     uris:
@@ -183,6 +237,9 @@ meta:
     - (( "*.uaa." .properties.domain ))
     - (( "login." .properties.domain ))
     - (( "*.login." .properties.domain ))
+    health_check:
+      name: uaa-healthcheck
+      script_path: /var/vcap/jobs/uaa/bin/health_check
 
   uaa_templates:
   - name: uaa
@@ -190,22 +247,22 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.consul_templates.consul_agent.release ))
+    release: (( meta.consul_release.name ))
   - name: route_registrar
     release: (( meta.release.name ))
   - name: statsd-injector
     release: (( meta.release.name ))
 
 jobs:
-
   - name: consul_z1
     templates: (( merge || meta.consul_templates ))
     instances: 2
     persistent_disk: 1024
     resource_pool: small_z1
-    networks:
-      - name: cf1
-        static_ips: (( merge || nil ))
+    default_networks:
+    - name: cf1
+      static_ips: ~
+    networks: (( merge || default_networks ))
     update:
       serial: true
       max_in_flight: 1
@@ -221,9 +278,10 @@ jobs:
     instances: 1
     persistent_disk: 1024
     resource_pool: small_z2
-    networks:
-      - name: cf2
-        static_ips: (( merge || nil ))
+    default_networks:
+    - name: cf2
+      static_ips: ~
+    networks: (( merge || default_networks ))
     update:
       serial: true
       max_in_flight: 1
@@ -324,6 +382,7 @@ jobs:
         zone: z1
       syslog_daemon_config: ~
     update:
+      serial: true
       max_in_flight: 1
 
   - name: etcd_z2
@@ -341,6 +400,7 @@ jobs:
         zone: z2
       syslog_daemon_config: ~
     update:
+      serial: true
       max_in_flight: 1
 
   - name: stats_z1
@@ -366,9 +426,34 @@ jobs:
     properties:
       clc_fs_check:
         paths: ~
+      syslog_daemon_config: ~
+      consul:
+        agent:
+          services:
+            blobstore: {}
       metron_agent:
         zone: z1
-      syslog_daemon_config: ~
+      route_registrar:
+        routes: (( merge || meta.blobstore_routes ))
+    update: (( merge || empty_hash ))
+
+  - name: blobstore_z1
+    templates: (( merge || meta.blobstore_templates ))
+    instances: 0
+    resource_pool: medium_z1
+    persistent_disk: 102400
+    networks:
+      - name: cf1
+        static_ips: ~
+    properties:
+      consul:
+        agent:
+          services:
+            blobstore: {}
+      metron_agent:
+        zone: z1
+      route_registrar:
+        routes: (( merge || meta.blobstore_routes ))
     update: (( merge || empty_hash ))
 
   - name: postgres_z1
@@ -437,7 +522,6 @@ jobs:
     networks: (( merge || default_networks ))
     properties:
       <<: (( merge ))
-
       consul:
         agent:
           services: (( merge || meta.api_consul_services ))
@@ -518,6 +602,10 @@ jobs:
     networks:
       - name: cf1
     properties:
+      consul:
+        agent:
+          services:
+            hm9000: {}
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
@@ -532,6 +620,10 @@ jobs:
     networks:
       - name: cf2
     properties:
+      consul:
+        agent:
+          services:
+            hm9000: {}
       metron_agent:
         zone: z2
       syslog_daemon_config: ~
@@ -552,6 +644,15 @@ jobs:
       metron_agent:
         zone: z1
       syslog_daemon_config: ~
+      consul:
+        agent:
+          services:
+            dea:
+              check:
+                name: dns_health_check
+                script: /var/vcap/jobs/dea_next/bin/dns_health_check
+                interval: 5m
+                status: passing
     update:
       max_in_flight: 1
 
@@ -567,6 +668,15 @@ jobs:
         zone: (( merge || "z2" ))
       metron_agent:
         zone: z2
+      consul:
+        agent:
+          services:
+            dea:
+              check:
+                name: dns_health_check
+                script: /var/vcap/jobs/dea_next/bin/dns_health_check
+                interval: 5m
+                status: passing
       syslog_daemon_config: ~
     update:
       max_in_flight: 1
@@ -724,6 +834,7 @@ properties:
   <<: (( merge ))
   consul:
     agent:
+      domain: cf.internal
       datacenter: ~
       log_level: (( merge || nil ))
       servers:
@@ -766,6 +877,7 @@ properties:
     machines: (( merge || jobs.etcd_z1.networks.cf1.static_ips jobs.etcd_z2.networks.cf2.static_ips ))
     require_ssl: false
     peer_require_ssl: false
+    advertise_urls_dns_suffix: (( merge || "etcd.service.cf.internal" ))
 
   etcd_metrics_server:
     nats:
@@ -797,6 +909,13 @@ properties:
     allow_host_access: ~
     mtu: (( merge || nil ))
     post_setup_hook: null
+
+    ca_cert:
+    client_cert:
+    client_key:
+    enable_ssl: false
+    server_cert:
+    server_key:
 
   loggregator:
     <<: (( merge ))
@@ -842,10 +961,16 @@ properties:
     route_services_secret: (( merge || nil ))
     route_services_secret_decrypt_only: (( merge || nil ))
     route_services_timeout: (( merge || nil ))
+    route_services_recommend_https: (( merge || nil ))
     logrotate: (( merge || nil ))
     extra_headers_to_log: (( merge || nil ))
     debug_addr: (( merge || nil ))
     enable_routing_api: (( merge || nil ))
+    drain_wait: (( merge || nil ))
+    skip_oauth_tls_verification: (( merge || nil ))
+
+  routing_api:
+    enabled: (( merge || nil ))
 
   syslog_daemon_config: ~
 

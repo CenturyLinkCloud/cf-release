@@ -30,6 +30,11 @@ networks:
       cloud_properties:
         net_id: NET_ID
         security_groups: ["cf"]
+  - name: cf2
+    type: manual
+    subnets: (( networks.cf1.subnets )) # cf2 unused by default with the OpenStack template
+                                        # but the general upstream templates require this
+                                        # to be a semi-valid value, so just copy cf1
 
 properties:
   domain: DOMAIN
@@ -48,6 +53,16 @@ properties:
     db_encryption_key: DB_ENCRYPTION_KEY
     uaa_skip_ssl_validation: true
 
+  blobstore:
+    admin_users:
+      - username: blobstore-username
+        password: blobstore-password
+    secure_link:
+      secret: blobstore-secret
+    tls:
+      port: 443
+      cert: BLOBSTORE_TLS_CERT
+      private_key: BLOBSTORE_PRIVATE_KEY
   consul:
     encrypt_keys:
       - CONSUL_ENCRYPT_KEY
@@ -132,6 +147,20 @@ jobs:
           -----END CERTIFICATE-----
   - name: api_z1
     templates:
+      - name: go-buildpack
+        release: cf
+      - name: binary-buildpack
+        release: cf
+      - name: nodejs-buildpack
+        release: cf
+      - name: ruby-buildpack
+        release: cf
+      - name: php-buildpack
+        release: cf
+      - name: python-buildpack
+        release: cf
+      - name: staticfile-buildpack
+        release: cf
       - name: cloud_controller_ng
         release: cf
       - name: cloud_controller_clock
@@ -142,10 +171,9 @@ jobs:
         release: cf
       - name: statsd-injector
         release: cf
-      - name: nfs_mounter
-        release: cf
       - name: route_registrar
         release: cf
+
   - name: api_worker_z1
     instances: 0
   - name: clock_global

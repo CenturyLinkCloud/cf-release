@@ -4,6 +4,7 @@ meta:
     default:
        memory_limit: 10240
        total_services: 100
+       total_service_keys: 1000
        non_basic_services_allowed: true
        total_routes: 1000
   default_security_group_definitions:
@@ -32,6 +33,18 @@ properties:
   <<: (( merge ))
   app_ssh: ~
   domain: (( merge ))
+  ssl:
+    skip_cert_verify: (( merge || false ))
+
+  blobstore:
+    port: (( merge || 80 ))
+    admin_users: (( merge || nil ))
+    secure_link:
+      secret: (( merge || nil ))
+    tls:
+      port: (( merge || 443 ))
+      cert: ~
+      private_key: ~
 
   loggregator_endpoint:
     shared_secret: (( merge ))
@@ -42,20 +55,21 @@ properties:
     blacklisted_syslog_ranges: ~
     outgoing_dropsonde_port: 8081
     tls:
-      ca: ~
+      ca_cert: ~
 
   doppler:
+    message_drain_buffer_size: ~
     zone: (( merge || nil ))
     maxRetainedLogMessages: 100
     debug: (( merge || false ))
     blacklisted_syslog_ranges: ~
     unmarshaller_count: (( merge || 5 ))
     port: (( merge || 4443 ))
-    enable_tls_transport: ~
-    tls_server:
-      cert: ~
+    tls:
+      server_cert: ~
+      server_key: ~
       port: ~
-      key: ~
+      enable: ~
 
 
   metron_agent:
@@ -63,13 +77,14 @@ properties:
     preferred_protocol: ~
     enable_buffer: ~
     buffer_size: ~
-    tls_client:
-      cert: ~
-      key: ~
+    tls:
+      client_cert: ~
+      client_key: ~
 
   traffic_controller:
     outgoing_port: 8080
     zone: (( merge || nil ))
+    disable_access_control: (( merge || nil ))
 
   cc:
     jobs:
@@ -142,11 +157,15 @@ properties:
     broker_client_max_async_poll_duration_minutes: ~
 
     resource_pool:
+      blobstore_type: (( merge || "webdav" ))
+      webdav_config: (( merge || properties.cc.webdav_config ))
       resource_directory_key: (( domain "-cc-resources" ))
       fog_connection: ~
       cdn: ~
 
     packages:
+      blobstore_type: (( merge || "webdav" ))
+      webdav_config: (( merge || properties.cc.webdav_config ))
       app_package_directory_key: (( domain "-cc-packages" ))
       fog_connection: ~
       cdn: ~
@@ -154,6 +173,8 @@ properties:
       max_valid_packages_stored: ~
 
     droplets:
+      blobstore_type: (( merge || "webdav" ))
+      webdav_config: (( merge || properties.cc.webdav_config ))
       droplet_directory_key: (( domain "-cc-droplets" ))
       fog_connection: ~
       cdn: ~
@@ -172,6 +193,8 @@ properties:
         record_sql: "obfuscated"
 
     buildpacks:
+      blobstore_type: (( merge || "webdav" ))
+      webdav_config: (( merge || properties.cc.webdav_config ))
       buildpack_directory_key: (( domain "-cc-buildpacks" ))
       fog_connection: ~
       cdn: ~
@@ -182,21 +205,21 @@ properties:
     system_buildpacks: (( merge || default_buildpacks ))
     default_buildpacks:
       - name: staticfile_buildpack
-        package: buildpack_staticfile
+        package: staticfile-buildpack
       - name: java_buildpack
         package: buildpack_java
       - name: ruby_buildpack
-        package: buildpack_ruby
+        package: ruby-buildpack
       - name: nodejs_buildpack
-        package: buildpack_nodejs
+        package: nodejs-buildpack
       - name: go_buildpack
-        package: buildpack_go
+        package: go-buildpack
       - name: python_buildpack
-        package: buildpack_python
+        package: python-buildpack
       - name: php_buildpack
-        package: buildpack_php
+        package: php-buildpack
       - name: binary_buildpack
-        package: buildpack_binary
+        package: binary-buildpack
 
     install_buildpacks: (( system_buildpacks user_buildpacks ))
 
@@ -217,6 +240,16 @@ properties:
         restart_if_consistently_above_mb: ~
         restart_if_above_mb: ~
     external_protocol: ~
+
+    webdav_config:
+      private_endpoint: "https://blobstore.service.cf.internal"
+      public_endpoint: (( "http://blobstore." domain || nil))
+      username: ((  properties.blobstore.admin_users.[0].username || nil ))
+      password: ((  properties.blobstore.admin_users.[0].password || nil ))
+
+    reserved_private_domains: ~
+
+    dea_use_https: false
 
   hm9000:
     url: (( "https://hm9000." domain ))
@@ -261,8 +294,7 @@ properties:
     restricted_ips_regex: ~
 
   uaa:
-    catalina_opts: (( merge ))
-
+    catalina_opts: ~
     url: (( "https://uaa." domain ))
     issuer: (( url ))
 
@@ -277,6 +309,8 @@ properties:
 
     ssl:
       port: -1
+    sslCertificate: ~
+    sslPrivateKey: ~
 
     jwt: (( merge ))
 
@@ -301,7 +335,6 @@ properties:
     spring_profiles: ~
 
     user: ~
-
     clients:
       <<: (( merge || nil ))
       login:
@@ -311,11 +344,12 @@ properties:
         secret: (( merge ))
         authorized-grant-types: authorization_code,client_credentials,refresh_token
         redirect-uri: (( "https://login." domain ))
+        autoapprove: true
       cf:
         autoapprove: true
         id: cf
         override: true
-        authorized-grant-types: implicit,password,refresh_token
+        authorized-grant-types: password,refresh_token
         scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,scim.read,scim.write,doppler.firehose,uaa.user,routing.router_groups.read
         authorities: uaa.none
         access-token-validity: 600
@@ -341,11 +375,11 @@ properties:
         authorized-grant-types: client_credentials,refresh_token
         secret: (( merge ))
       tcp_emitter:
-        authorities: routing.routes.write,routing.routes.read
+        authorities: routing.routes.write,routing.routes.read,routing.router_groups.read
         authorized-grant-types: client_credentials,refresh_token
         secret: (( merge ))
       tcp_router:
-        authorities: routing.routes.read
+        authorities: routing.routes.read,routing.router_groups.read
         authorized-grant-types: client_credentials,refresh_token
         secret: (( merge ))
 

@@ -8,7 +8,10 @@ compilation:
   workers: 6
 director_uuid: DIRECTOR_UUID
 jobs:
-- instances: 2
+- default_networks:
+    - name: cf1
+      static_ips: null
+  instances: 2
   name: consul_z1
   networks:
   - name: cf1
@@ -31,7 +34,10 @@ jobs:
   update:
     max_in_flight: 1
     serial: true
-- instances: 1
+- default_networks:
+    - name: cf2
+      static_ips: null
+  instances: 1
   name: consul_z2
   networks:
   - name: cf2
@@ -64,19 +70,13 @@ jobs:
     - 10.85.9.233
   properties:
     ha_proxy:
-      ssl_pem: '-----BEGIN RSA PRIVATE KEY-----
-
+      ssl_pem: |+
+        -----BEGIN RSA PRIVATE KEY-----
         RSA_PRIVATE_KEY
-
         -----END RSA PRIVATE KEY-----
-
         -----BEGIN CERTIFICATE-----
-
         CERTIFICATE
-
         -----END CERTIFICATE-----
-
-'
     metron_agent:
       zone: z1
     router:
@@ -150,6 +150,7 @@ jobs:
   - name: metron_agent
     release: cf
   update:
+    serial: true
     max_in_flight: 1
 - instances: 1
   name: etcd_z2
@@ -170,6 +171,7 @@ jobs:
   - name: metron_agent
     release: cf
   update:
+    serial: true
     max_in_flight: 1
 - instances: 1
   name: stats_z1
@@ -185,21 +187,72 @@ jobs:
   - name: metron_agent
     release: cf
   update: {}
-- instances: 1
+- instances: 0
   name: nfs_z1
   networks:
   - name: cf1
-    static_ips:
-    - 10.85.9.232
+    static_ips: []
   persistent_disk: 102400
   properties:
+    consul:
+      agent:
+        services:
+          blobstore: {}
     metron_agent:
       zone: z1
+    route_registrar:
+      routes:
+      - name: blobstore
+        port: 80
+        registration_interval: 20s
+        tags:
+          component: blobstore
+        uris:
+        - blobstore.DOMAIN
   resource_pool: medium_z1
   templates:
+  - name: consul_agent
+    release: cf
   - name: debian_nfs_server
     release: cf
   - name: metron_agent
+    release: cf
+  - name: blobstore
+    release: cf
+  - name: route_registrar
+    release: cf
+  update: {}
+- instances: 1
+  name: blobstore_z1
+  networks:
+  - name: cf1
+    static_ips: null
+  persistent_disk: 102400
+  properties:
+    consul:
+      agent:
+        services:
+          blobstore: {}
+    metron_agent:
+      zone: z1
+    route_registrar:
+      routes:
+      - name: blobstore
+        port: 80
+        registration_interval: 20s
+        tags:
+          component: blobstore
+        uris:
+        - blobstore.DOMAIN
+  resource_pool: medium_z1
+  templates:
+  - name: consul_agent
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: blobstore
+    release: cf
+  - name: route_registrar
     release: cf
   update: {}
 - instances: 1
@@ -234,6 +287,7 @@ jobs:
       routes:
       - name: uaa
         port: 8080
+        registration_interval: 4s
         tags:
           component: uaa
         uris:
@@ -241,6 +295,9 @@ jobs:
         - '*.uaa.DOMAIN'
         - login.DOMAIN
         - '*.login.DOMAIN'
+        health_check:
+          name: uaa-healthcheck
+          script_path: /var/vcap/jobs/uaa/bin/health_check
     uaa:
       proxy:
         servers:
@@ -274,6 +331,7 @@ jobs:
       routes:
       - name: uaa
         port: 8080
+        registration_interval: 4s
         tags:
           component: uaa
         uris:
@@ -281,6 +339,9 @@ jobs:
         - '*.uaa.DOMAIN'
         - login.DOMAIN
         - '*.login.DOMAIN'
+        health_check:
+          name: uaa-healthcheck
+          script_path: /var/vcap/jobs/uaa/bin/health_check
     uaa:
       proxy:
         servers:
@@ -312,7 +373,7 @@ jobs:
     metron_agent:
       zone: z1
     nfs_server:
-      address: 10.85.9.232
+      address: null
       allow_from_entries:
       - 10.85.9.0/24
       - 10.85.10.0/24
@@ -321,21 +382,38 @@ jobs:
       routes:
       - name: api
         port: 9022
+        registration_interval: 20s
         tags:
           component: CloudController
         uris:
         - api.DOMAIN
   resource_pool: large_z1
   templates:
+  - name: consul_agent
+    release: cf
+  - name: java-buildpack
+    release: cf
+  - name: java-offline-buildpack
+    release: cf
+  - name: go-buildpack
+    release: cf
+  - name: binary-buildpack
+    release: cf
+  - name: nodejs-buildpack
+    release: cf
+  - name: ruby-buildpack
+    release: cf
+  - name: php-buildpack
+    release: cf
+  - name: python-buildpack
+    release: cf
+  - name: staticfile-buildpack
+    release: cf
   - name: cloud_controller_ng
     release: cf
   - name: metron_agent
     release: cf
   - name: statsd-injector
-    release: cf
-  - name: consul_agent
-    release: cf
-  - name: nfs_mounter
     release: cf
   - name: route_registrar
     release: cf
@@ -353,7 +431,7 @@ jobs:
     metron_agent:
       zone: z2
     nfs_server:
-      address: 10.85.9.232
+      address: null
       allow_from_entries:
       - 10.85.9.0/24
       - 10.85.10.0/24
@@ -362,21 +440,38 @@ jobs:
       routes:
       - name: api
         port: 9022
+        registration_interval: 20s
         tags:
           component: CloudController
         uris:
         - api.DOMAIN
   resource_pool: large_z2
   templates:
+  - name: consul_agent
+    release: cf
+  - name: java-buildpack
+    release: cf
+  - name: java-offline-buildpack
+    release: cf
+  - name: go-buildpack
+    release: cf
+  - name: binary-buildpack
+    release: cf
+  - name: nodejs-buildpack
+    release: cf
+  - name: ruby-buildpack
+    release: cf
+  - name: php-buildpack
+    release: cf
+  - name: python-buildpack
+    release: cf
+  - name: staticfile-buildpack
+    release: cf
   - name: cloud_controller_ng
     release: cf
   - name: metron_agent
     release: cf
   - name: statsd-injector
-    release: cf
-  - name: consul_agent
-    release: cf
-  - name: nfs_mounter
     release: cf
   - name: route_registrar
     release: cf
@@ -405,20 +500,18 @@ jobs:
     metron_agent:
       zone: z1
     nfs_server:
-      address: 10.85.9.232
+      address: null
       allow_from_entries:
       - 10.85.9.0/24
       - 10.85.10.0/24
       share: null
   resource_pool: small_z1
   templates:
+  - name: consul_agent
+    release: cf
   - name: cloud_controller_worker
     release: cf
   - name: metron_agent
-    release: cf
-  - name: consul_agent
-    release: cf
-  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 1
@@ -430,20 +523,18 @@ jobs:
     metron_agent:
       zone: z2
     nfs_server:
-      address: 10.85.9.232
+      address: null
       allow_from_entries:
       - 10.85.9.0/24
       - 10.85.10.0/24
       share: null
   resource_pool: small_z2
   templates:
+  - name: consul_agent
+    release: cf
   - name: cloud_controller_worker
     release: cf
   - name: metron_agent
-    release: cf
-  - name: consul_agent
-    release: cf
-  - name: nfs_mounter
     release: cf
   update: {}
 - instances: 1
@@ -451,18 +542,25 @@ jobs:
   networks:
   - name: cf1
   properties:
+    consul:
+      agent:
+        services:
+          hm9000: {}
     metron_agent:
       zone: z1
     route_registrar:
       routes:
       - name: hm9000
         port: 5155
+        registration_interval: 20s
         tags:
           component: HM9K
         uris:
         - hm9000.DOMAIN
   resource_pool: medium_z1
   templates:
+  - name: consul_agent
+    release: cf
   - name: hm9000
     release: cf
   - name: metron_agent
@@ -475,18 +573,25 @@ jobs:
   networks:
   - name: cf2
   properties:
+    consul:
+      agent:
+        services:
+          hm9000: {}
     metron_agent:
       zone: z2
     route_registrar:
       routes:
       - name: hm9000
         port: 5155
+        registration_interval: 20s
         tags:
           component: HM9K
         uris:
         - hm9000.DOMAIN
   resource_pool: medium_z2
   templates:
+  - name: consul_agent
+    release: cf
   - name: hm9000
     release: cf
   - name: metron_agent
@@ -500,12 +605,23 @@ jobs:
   - name: cf1
     static_ips: null
   properties:
+    consul:
+      agent:
+        services:
+          dea:
+            check:
+              interval: 5m
+              name: dns_health_check
+              script: /var/vcap/jobs/dea_next/bin/dns_health_check
+              status: passing
     dea_next:
       zone: z1
     metron_agent:
       zone: z1
   resource_pool: runner_z1
   templates:
+  - name: consul_agent
+    release: cf
   - name: dea_next
     release: cf
   - name: dea_logging_agent
@@ -520,12 +636,23 @@ jobs:
   - name: cf2
     static_ips: null
   properties:
+    consul:
+      agent:
+        services:
+          dea:
+            check:
+              interval: 5m
+              name: dns_health_check
+              script: /var/vcap/jobs/dea_next/bin/dns_health_check
+              status: passing
     dea_next:
       zone: z2
     metron_agent:
       zone: z2
   resource_pool: runner_z2
   templates:
+  - name: consul_agent
+    release: cf
   - name: dea_next
     release: cf
   - name: dea_logging_agent
@@ -617,10 +744,12 @@ jobs:
       routes:
       - name: doppler
         port: 8081
+        registration_interval: 20s
         uris:
         - doppler.DOMAIN
       - name: loggregator
         port: 8080
+        registration_interval: 20s
         uris:
         - loggregator.DOMAIN
     traffic_controller:
@@ -645,10 +774,12 @@ jobs:
       routes:
       - name: doppler
         port: 8081
+        registration_interval: 20s
         uris:
         - doppler.DOMAIN
       - name: loggregator
         port: 8080
+        registration_interval: 20s
         uris:
         - loggregator.DOMAIN
     traffic_controller:
@@ -680,11 +811,11 @@ jobs:
       zone: z1
   resource_pool: router_z1
   templates:
+  - name: consul_agent
+    release: cf
   - name: gorouter
     release: cf
   - name: metron_agent
-    release: cf
-  - name: consul_agent
     release: cf
   update: {}
 - default_networks:
@@ -705,11 +836,11 @@ jobs:
       zone: z2
   resource_pool: router_z2
   templates:
+  - name: consul_agent
+    release: cf
   - name: gorouter
     release: cf
   - name: metron_agent
-    release: cf
-  - name: consul_agent
     release: cf
   update: {}
 - instances: 1
@@ -771,6 +902,17 @@ properties:
   app_domains:
   - APP_DOMAIN
   app_ssh: null
+  blobstore:
+    admin_users:
+    - password: blobstore-password
+      username: blobstore-username
+    port: 80
+    secure_link:
+      secret: blobstore-secret
+    tls:
+      port: 443
+      cert: BLOBSTORE_TLS_CERT
+      private_key: BLOBSTORE_PRIVATE_KEY
   cc:
     allow_app_ssh_access: true
     allowed_cors_domains: []
@@ -784,32 +926,39 @@ properties:
     broker_client_max_async_poll_duration_minutes: null
     broker_client_timeout_seconds: 70
     buildpacks:
+      blobstore_type: webdav
       buildpack_directory_key: DOMAIN-cc-buildpacks
       cdn: null
       fog_connection: null
+      webdav_config:
+        password: blobstore-password
+        private_endpoint: https://blobstore.service.cf.internal
+        public_endpoint: http://blobstore.DOMAIN
+        username: blobstore-username
     bulk_api_password: BULK_API_PASSWORD
     client_max_body_size: 15M
     db_encryption_key: DB_ENCRYPTION_KEY
     db_logging_level: debug2
+    dea_use_https: false
     default_app_disk_in_mb: 1024
     default_app_memory: 1024
     default_buildpacks:
     - name: staticfile_buildpack
-      package: buildpack_staticfile
+      package: staticfile-buildpack
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
-      package: buildpack_ruby
+      package: ruby-buildpack
     - name: nodejs_buildpack
-      package: buildpack_nodejs
+      package: nodejs-buildpack
     - name: go_buildpack
-      package: buildpack_go
+      package: go-buildpack
     - name: python_buildpack
-      package: buildpack_python
+      package: python-buildpack
     - name: php_buildpack
-      package: buildpack_php
+      package: php-buildpack
     - name: binary_buildpack
-      package: buildpack_binary
+      package: binary-buildpack
     default_health_check_timeout: 60
     default_quota_definition: default
     default_running_security_groups:
@@ -823,30 +972,36 @@ properties:
     directories: null
     disable_custom_buildpacks: false
     droplets:
+      blobstore_type: webdav
       cdn: null
       droplet_directory_key: DOMAIN-cc-droplets
       fog_connection: null
       max_staged_droplets_stored: null
+      webdav_config:
+        password: blobstore-password
+        private_endpoint: https://blobstore.service.cf.internal
+        public_endpoint: http://blobstore.DOMAIN
+        username: blobstore-username
     external_host: api
     external_port: 9022
     external_protocol: null
     install_buildpacks:
     - name: staticfile_buildpack
-      package: buildpack_staticfile
+      package: staticfile-buildpack
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
-      package: buildpack_ruby
+      package: ruby-buildpack
     - name: nodejs_buildpack
-      package: buildpack_nodejs
+      package: nodejs-buildpack
     - name: go_buildpack
-      package: buildpack_go
+      package: go-buildpack
     - name: python_buildpack
-      package: buildpack_python
+      package: python-buildpack
     - name: php_buildpack
-      package: buildpack_php
+      package: php-buildpack
     - name: binary_buildpack
-      package: buildpack_binary
+      package: binary-buildpack
     internal_api_password: BULK_API_PASSWORD
     internal_api_user: internal_user
     jobs:
@@ -886,20 +1041,34 @@ properties:
         record_sql: obfuscated
     packages:
       app_package_directory_key: DOMAIN-cc-packages
+      blobstore_type: webdav
       cdn: null
       fog_connection: null
       max_package_size: 1073741824
       max_valid_packages_stored: null
+      webdav_config:
+        password: blobstore-password
+        private_endpoint: https://blobstore.service.cf.internal
+        public_endpoint: http://blobstore.DOMAIN
+        username: blobstore-username
     quota_definitions:
       default:
         memory_limit: 10240
         non_basic_services_allowed: true
         total_routes: 1000
+        total_service_keys: 1000
         total_services: 100
+    reserved_private_domains: ~
     resource_pool:
+      blobstore_type: webdav
       cdn: null
       fog_connection: null
       resource_directory_key: DOMAIN-cc-resources
+      webdav_config:
+        password: blobstore-password
+        private_endpoint: https://blobstore.service.cf.internal
+        public_endpoint: http://blobstore.DOMAIN
+        username: blobstore-username
     security_group_definitions:
     - name: public_networks
       rules:
@@ -929,21 +1098,21 @@ properties:
     staging_upload_user: STAGING_UPLOAD_USER
     system_buildpacks:
     - name: staticfile_buildpack
-      package: buildpack_staticfile
+      package: staticfile-buildpack
     - name: java_buildpack
       package: buildpack_java
     - name: ruby_buildpack
-      package: buildpack_ruby
+      package: ruby-buildpack
     - name: nodejs_buildpack
-      package: buildpack_nodejs
+      package: nodejs-buildpack
     - name: go_buildpack
-      package: buildpack_go
+      package: go-buildpack
     - name: python_buildpack
-      package: buildpack_python
+      package: python-buildpack
     - name: php_buildpack
-      package: buildpack_php
+      package: php-buildpack
     - name: binary_buildpack
-      package: buildpack_binary
+      package: binary-buildpack
     thresholds:
       api:
         alert_if_above_mb: null
@@ -955,6 +1124,11 @@ properties:
         restart_if_consistently_above_mb: null
     user_buildpacks: []
     users_can_select_backend: true
+    webdav_config:
+      password: blobstore-password
+      private_endpoint: https://blobstore.service.cf.internal
+      public_endpoint: http://blobstore.DOMAIN
+      username: blobstore-username
   ccdb:
     address: 10.85.9.242
     databases:
@@ -971,6 +1145,7 @@ properties:
   consul:
     agent:
       log_level: null
+      domain: cf.internal
       servers:
         lan:
         - 10.85.9.247
@@ -1008,11 +1183,15 @@ properties:
     advertise_interval_in_seconds: 5
     allow_host_access: null
     allow_networks: []
+    ca_cert:
+    client_cert:
+    client_key:
     default_health_check_timeout: 60
     deny_networks: []
     directory_server_protocol: https
     disk_mb: 2048
     disk_overcommit_factor: null
+    enable_ssl: false
     evacuation_bail_out_time_in_seconds: 600
     heartbeat_interval_in_seconds: 10
     instance_bandwidth_limit: null
@@ -1024,6 +1203,8 @@ properties:
     mtu: null
     post_setup_hook: null
     rlimit_core: 0
+    server_cert:
+    server_key:
     staging_bandwidth_limit: null
     staging_disk_inode_limit: 200000
     staging_disk_limit_mb: 6144
@@ -1034,13 +1215,14 @@ properties:
   doppler:
     blacklisted_syslog_ranges: null
     debug: false
-    enable_tls_transport: null
     maxRetainedLogMessages: 100
+    message_drain_buffer_size: null
     port: 4443
-    tls_server:
-      cert: null
-      key: null
+    tls:
+      enable: null
       port: null
+      server_cert: null
+      server_key: null
     unmarshaller_count: 5
     zone: null
   doppler_endpoint:
@@ -1054,6 +1236,7 @@ properties:
     - 10.85.10.243
     peer_require_ssl: false
     require_ssl: false
+    advertise_urls_dns_suffix: etcd.service.cf.internal
   etcd_metrics_server:
     nats:
       machines:
@@ -1077,7 +1260,7 @@ properties:
     maxRetainedLogMessages: 100
     outgoing_dropsonde_port: 8081
     tls:
-      ca: null
+      ca_cert: null
   loggregator_endpoint:
     shared_secret: LOGGREGATOR_ENDPOINT_SHARED_SECRET
   login:
@@ -1115,9 +1298,9 @@ properties:
     deployment: ENVIRONMENT
     enable_buffer: null
     preferred_protocol: null
-    tls_client:
-      cert: null
-      key: null
+    tls:
+      client_cert: null
+      client_key: null
   metron_endpoint:
     shared_secret: LOGGREGATOR_ENDPOINT_SHARED_SECRET
   nats:
@@ -1132,7 +1315,7 @@ properties:
     trace: false
     user: NATS_USER
   nfs_server:
-    address: 10.85.9.232
+    address: null
     allow_from_entries:
     - 10.85.9.0/24
     - 10.85.10.0/24
@@ -1141,6 +1324,7 @@ properties:
   router:
     cipher_suites: null
     debug_addr: null
+    drain_wait: null
     enable_routing_api: null
     enable_ssl: null
     extra_headers_to_log: null
@@ -1148,16 +1332,20 @@ properties:
     port: null
     requested_route_registration_interval_in_seconds: null
     route_services_secret: null
+    route_services_recommend_https: null
     route_services_secret_decrypt_only: null
     route_services_timeout: null
     secure_cookies: null
     ssl_cert: null
     ssl_key: null
     ssl_skip_validation: null
+    skip_oauth_tls_verification: null
     status:
       password: ROUTER_PASSWORD
       port: null
       user: ROUTER_USER
+  routing_api:
+    enabled: null
   smoke_tests: null
   ssl:
     skip_cert_verify: true
@@ -1168,6 +1356,7 @@ properties:
   traffic_controller:
     outgoing_port: 8080
     zone: null
+    disable_access_control: null
   uaa:
     admin:
       client_secret: ADMIN_SECRET
@@ -1176,7 +1365,7 @@ properties:
         countFailuresWithinSeconds: null
         lockoutAfterFailures: null
         lockoutPeriodSeconds: null
-    catalina_opts: -Xmx768m -XX:MaxPermSize=256m
+    catalina_opts: null
     cc:
       client_secret: CC_CLIENT_SECRET
     clients:
@@ -1187,8 +1376,7 @@ properties:
       cf:
         access-token-validity: 600
         authorities: uaa.none
-        authorized-grant-types: implicit,password,refresh_token
-        id: cf
+        authorized-grant-types: password,refresh_token
         override: true
         refresh-token-validity: 2592000
         scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,scim.read,scim.write,doppler.firehose,uaa.user,routing.router_groups.read
@@ -1207,6 +1395,7 @@ properties:
       login:
         authorities: oauth.login,scim.write,clients.read,notifications.write,critical_notifications.write,emails.write,scim.userids,password.write
         authorized-grant-types: authorization_code,client_credentials,refresh_token
+        autoapprove: true
         override: true
         redirect-uri: https://login.DOMAIN
         scope: openid,oauth.approvals
@@ -1216,11 +1405,11 @@ properties:
         authorized-grant-types: client_credentials
         secret: NOTIFICATION_SECRET
       tcp_emitter:
-        authorities: routing.routes.write,routing.routes.read
+        authorities: routing.routes.write,routing.routes.read,routing.router_groups.read
         authorized-grant-types: client_credentials,refresh_token
         secret: TCP-EMITTER-SECRET
       tcp_router:
-        authorities: routing.routes.read
+        authorities: routing.routes.read,routing.router_groups.read
         authorized-grant-types: client_credentials,refresh_token
         secret: TCP-ROUTER-SECRET
     database: null
@@ -1244,6 +1433,8 @@ properties:
     spring_profiles: null
     ssl:
       port: -1
+    sslCertificate: null
+    sslPrivateKey: null
     url: https://uaa.DOMAIN
     user: null
     zones: null
@@ -1413,4 +1604,3 @@ update:
   max_in_flight: 1
   serial: true
   update_watch_time: 5000-600000
-

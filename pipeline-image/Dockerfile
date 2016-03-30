@@ -90,14 +90,16 @@ RUN \
   rm -rf /tmp/*
 
 RUN \
-  wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.6.5_x86_64.deb -P /tmp && \
-  dpkg --install /tmp/vagrant_1.6.5_x86_64.deb && \
+  wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb -P /tmp && \
+  dpkg --install /tmp/vagrant_1.8.1_x86_64.deb && \
   vagrant plugin install vagrant-aws && \
   rm -rf /tmp/*
 
 RUN \
-  wget https://s3.amazonaws.com/go-cli/releases/v6.12.3/cf-linux-amd64.tgz -P /tmp && \
-  tar xvf /tmp/cf-linux-amd64.tgz -C /usr/local/bin && \
+  wget \
+    -P /tmp \
+    http://go-cli.s3-website-us-east-1.amazonaws.com/releases/v6.16.1/cf-cli_6.16.1_linux_x86-64.tgz && \
+  tar xvf /tmp/cf-cli_6.16.1_linux_x86-64.tgz -C /usr/local/bin && \
   ln -s /usr/local/bin/cf /usr/local/bin/gcf && \
   rm -rf /tmp/*
 
