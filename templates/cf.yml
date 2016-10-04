@@ -53,10 +53,14 @@ jobs:
     networks: (( merge || default_networks ))
     properties:
       ha_proxy:
+        ssl_pem: ~
+        disable_http: false
+        ssl_ciphers: ~
       router:
         servers: (( merge || jobs.router_z1.networks.cf1.static_ips jobs.router_z2.networks.cf2.static_ips || nil ))
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: nats_z1
@@ -69,6 +73,7 @@ jobs:
     properties:
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: nats_z2
@@ -92,8 +97,11 @@ jobs:
       - name: cf1
     networks: (( merge || default_networks ))
     properties:
+      clc_fs_check:
+        paths: ~
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       consul:
         agent:
           services:
@@ -133,6 +141,7 @@ jobs:
     properties:
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: nfs_z1
@@ -144,12 +153,15 @@ jobs:
       - name: cf1
     networks: (( merge || default_networks ))
     properties:
+      clc_fs_check:
+        paths: ~
       consul:
         agent:
           services:
             blobstore: {}
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       route_registrar:
         routes: (( merge || meta.blobstore_routes ))
     update: (( merge || empty_hash ))
@@ -169,6 +181,7 @@ jobs:
             blobstore: {}
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       route_registrar:
         routes: (( merge || meta.blobstore_routes ))
     update: (( merge || empty_hash ))
@@ -200,6 +213,7 @@ jobs:
             uaa: {}
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       route_registrar:
         routes: (( merge || meta.uaa_routes ))
       uaa:
@@ -242,6 +256,7 @@ jobs:
           services: (( merge || meta.api_consul_services ))
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       route_registrar:
         routes: (( merge || meta.api_routes ))
       nfs_server: (( meta.nfs_server ))
@@ -277,6 +292,7 @@ jobs:
     properties:
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: api_worker_z1
@@ -290,6 +306,7 @@ jobs:
     properties:
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       nfs_server: (( meta.nfs_server ))
     update: (( merge || empty_hash ))
 
@@ -321,6 +338,7 @@ jobs:
             hm9000: {}
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       route_registrar:
         routes: (( merge || meta.hm9000_routes ))
     update: (( merge || empty_hash ))
@@ -355,6 +373,7 @@ jobs:
         zone: (( merge || "z1" ))
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       consul:
         agent:
           services:
@@ -403,6 +422,7 @@ jobs:
         zone: z1
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: loggregator_z2
@@ -431,6 +451,7 @@ jobs:
         zone: z1
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: doppler_z2
@@ -466,6 +487,7 @@ jobs:
             loggregator_trafficcontroller: {}
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
       route_registrar:
         routes: (( merge || meta.loggregator_trafficcontroller_routes ))
     update: (( merge || empty_hash ))
@@ -507,6 +529,7 @@ jobs:
             gorouter: {}
       metron_agent:
         zone: z1
+      syslog_daemon_config: ~
     update: (( merge || empty_hash ))
 
   - name: router_z2
@@ -549,6 +572,9 @@ jobs:
     properties:
       <<: (( merge ))
 
+  # Don't move this
+  - <<: (( merge ))
+
 properties:
   <<: (( merge ))
 
@@ -568,6 +594,7 @@ properties:
   consul:
     dns_config: (( merge || nil ))
     agent:
+      datacenter: ~
       domain: cf.internal
       log_level: (( merge || nil ))
       servers:
@@ -1018,6 +1045,8 @@ properties:
         redirect-uri: (( "https://login." system_domain ))
         autoapprove: true
       cf:
+        autoapprove: true
+        id: cf
         override: true
         authorized-grant-types: password,refresh_token
         scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,cloud_controller.admin_read_only,scim.read,scim.write,doppler.firehose,uaa.user,routing.router_groups.read,routing.router_groups.write
@@ -1322,6 +1351,8 @@ meta:
     release: (( meta.etcd_release_name ))
   - name: metron_agent
     release: (( meta.loggregator_release_name ))
+  - name: clc_fs_check
+    release: clc-release
 
   ha_proxy_templates:
   - name: consul_agent
@@ -1418,6 +1449,8 @@ meta:
     release: (( meta.capi_release_name ))
   - name: route_registrar
     release: (( meta.cf_release_name ))
+  - name: clc_fs_check
+    release: clc-release
 
   postgres_templates:
   - name: consul_agent
