@@ -32,6 +32,11 @@ frontend http-in
     default_backend http-routers
 <% end %>
 
+listen health_check_http_url
+    bind :8080
+    mode http
+    monitor-uri /health
+
 <% if p("ha_proxy.ssl_pem") %>
 frontend https-in
     mode http
@@ -50,25 +55,17 @@ frontend ssl-in
 backend http-routers
     mode http
     balance roundrobin
-    <% size = p("router.servers.z1").size %>
 
-    <% p("router.servers.z1").each_with_index do |ip, index| %>
+    <% p("router.servers").each_with_index do |ip, index| %>
         server node<%= index %> <%= ip %>:<%= p("router.port") %> check inter 1000
-    <% end %>
-    <% p("router.servers.z2").each_with_index do |ip, index| %>
-        server node<%= index + size %> <%= ip %>:<%= p("router.port") %> check inter 1000
     <% end %>
 
 backend tcp-routers
     mode tcp
     balance roundrobin
-    <% size = p("router.servers.z1").size %>
 
-    <% p("router.servers.z1").each_with_index do |ip, index| %>
+    <% p("router.servers").each_with_index do |ip, index| %>
         server node<%= index %> <%= ip %>:<%= p("router.port") %> check inter 1000
-    <% end %>
-    <% p("router.servers.z2").each_with_index do |ip, index| %>
-        server node<%= index + size %> <%= ip %>:<%= p("router.port") %> check inter 1000
     <% end %>
 
 <% if p("cc.allow_app_ssh_access") %>

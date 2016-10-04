@@ -1,6 +1,18 @@
 #!/bin/bash
 
+set -eu
+
 export BOSH_USE_BUNDLER=true
+
+set +e
+hash bundler > /dev/null 2>&1
+bundler_exists=$?
+set -e
+
+if [[ "${bundler_exists}" -ne 0 ]]; then
+  echo 'Bundler is not installed; install it with `gem install bundler`'
+  exit 1
+fi
 
 SCRIPT_DIR=$(dirname $0)
 CF_RELEASE_DIR=${CF_RELEASE_DIR:-$SCRIPT_DIR/..}
@@ -22,12 +34,8 @@ fi
 mkdir -p "${CF_RELEASE_DIR}/bosh-lite/deployments"
 
 "${CF_RELEASE_DIR}/scripts/generate_deployment_manifest" \
-  warden \
-  "${CF_RELEASE_DIR}/bosh-lite/stubs/dev-security-groups.yml" \
-  "${CF_RELEASE_DIR}/bosh-lite/stubs/property_overrides.yml" \
+  bosh-lite \
   <(echo "director_uuid: ${DIRECTOR_UUID}") \
-  "${CF_RELEASE_DIR}/templates/cf-minimal-dev.yml" \
-  "${CF_RELEASE_DIR}/bosh-lite/stubs/enable-diego-ssh.yml" \
   "$@" \
   > "${CF_RELEASE_DIR}/bosh-lite/deployments/cf.yml"
 
