@@ -3738,6 +3738,7 @@ properties:
     healthcheck_user_agent: null
     enable_access_log_streaming: null
     enable_proxy: null
+    force_forwarded_proto_https: null
     enable_ssl: null
     extra_headers_to_log: null
     logging_level: debug
@@ -3753,6 +3754,7 @@ properties:
     ssl_key: null
     ssl_skip_validation: true
     load_balancer_healthy_threshold: null
+    balancing_algorithm: null
     status:
       password: router
       port: null

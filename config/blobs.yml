@@ -19,10 +19,6 @@ haproxy/haproxy-1.5.14.tar.gz:
   object_id: 02657a44-3292-4e0b-8b18-bcad061a2381
   sha: 159f5beb8fdc6b8059ae51b53dc935d91c0fb51f
   size: 1345345
-haproxy/pcre-8.37.tar.gz:
-  object_id: 22601a5f-4ef4-4621-80aa-0fa1f8067db6
-  sha: 4a24a20c61347d8da4edc86d5475aaf70ac146bb
-  size: 2041593
 uaa/cloudfoundry-identity-statsd-1.0.0.war:
   object_id: 03f0688e-c6f3-4a27-8d5c-694b4dda0907
   sha: 038c11e503bdbc5194c76535b22f5d4b85aeb37f
@@ -135,10 +131,6 @@ php-buildpack/php_buildpack-cached-v4.3.20.zip:
   object_id: 68cab723-b37c-4988-a914-47ae681772f2
   sha: e3f54c3a2bec60cefb9d88f9cd2d05c8e496868c
   size: 320504242
-nodejs-buildpack/nodejs_buildpack-cached-v1.5.20.zip:
-  object_id: 21d95a77-a785-4ae8-8b0f-243d9d631316
-  sha: 3d33c91002f700dd2b2319a4f783b8f2d3e50742
-  size: 102661090
 staticfile-buildpack/staticfile_buildpack-cached-v1.3.11.zip:
   object_id: 0947e286-c11e-4e2f-a50d-e7d78c964af4
   sha: cbacf0467dfd603aac0b572c28501dc4234535fc
@@ -147,10 +139,6 @@ binary-buildpack/binary_buildpack-cached-v1.0.4.zip:
   object_id: 5fd8438c-02be-417b-a55c-ee6d2d25056f
   sha: afde861f4682bc5700d908a41a07158b5f7c84ab
   size: 9492
-ruby-buildpack/ruby_buildpack-cached-v1.6.25.zip:
-  object_id: 400097be-4cc9-444c-b51b-b5a261d3fec5
-  sha: 3bce8b1bd33153d545c373d25f677e5ce51cf53e
-  size: 273512071
 golang/go1.7.windows-amd64.zip:
   object_id: b0faa00a-3907-430a-953d-277c2b74effa
   sha: e276c4b9093369706591ce5d21dfa799b9e0a475
@@ -159,7 +147,19 @@ consul/consul_0.7.0_linux_amd64.zip:
   object_id: f9cfff76-4c3a-4e51-963b-454ccc157003
   sha: 32d5f51c35b75216cf73cabe0329239355dc4266
   size: 6470848
-rootfs/cflinuxfs2-1.84.0.tar.gz:
-  object_id: 37fa117b-ee56-4db5-a103-62b2b8afdf05
-  sha: b375ae3c5d1fa4da9474e627d9e7cfdabdcaa3c5
-  size: 281075592
+ruby-buildpack/ruby_buildpack-cached-v1.6.26.zip:
+  object_id: 788f68fb-7468-4743-b47f-d1c3b0d089c6
+  sha: 9a7c925a1915f43054600c91698dbae7a30f4a91
+  size: 273483815
+nodejs-buildpack/nodejs_buildpack-cached-v1.5.21.zip:
+  object_id: 28d02b64-6d50-43fb-bd7d-303b6e4a7847
+  sha: cf94e0af33ae6249404d935c33c2d139f4585195
+  size: 102461681
+haproxy/pcre-8.39.tar.gz:
+  object_id: 0aab6e30-25b2-4844-90be-997feb090e3a
+  sha: b3aec1f643d9701841e2f9d57ac121a7ff448fc8
+  size: 2062258
+rootfs/cflinuxfs2-1.86.0.tar.gz:
+  object_id: 13382bb5-efad-40ea-ac75-89d496254842
+  sha: 788a376772eb6dc17d6fb93ded3ade231ba10ad0
+  size: 278207078
